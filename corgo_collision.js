@@ -1,4 +1,5 @@
 import { defs, tiny } from './examples/common.js';
+import {Shape_From_File} from "./examples/obj-file-demo.js";
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
@@ -394,7 +395,9 @@ const Corgo_collision_base = defs.Corgo_collision_base =
         // Don't define more than one blueprint for the same thing here.
         this.shapes = { 'box'  : new defs.Cube(),
           'ball' : new defs.Subdivision_Sphere( 4 ),
-          'axis' : new defs.Axis_Arrows() };
+          'axis' : new defs.Axis_Arrows(),
+          'corgi': new Shape_From_File("assets/corgi.obj"),
+          'mushroom': new Shape_From_File("assets/mushroom.obj")};
 
         // *** Materials: ***  A "material" used on individual shapes specifies all fields
         // that a Shader queries to light/color it properly.  Here we use a Phong shader.
@@ -405,7 +408,10 @@ const Corgo_collision_base = defs.Corgo_collision_base =
         this.materials = {};
         this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) }
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
-        this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
+        // this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
+
+        // Corgi texture
+        this.materials.corgiMtl = { shader: tex_phong, ambient: 1.0, diffusivity: 1, specularity: 0, texture: new Texture( "assets/fur.png" ) };
 
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
@@ -537,10 +543,10 @@ export class Corgo_collision extends Corgo_collision_base
     let x = position[0];
     let y = position[1];
     let z = position[2];
-    this.shapes.box.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.5,0.5,1)),  { ...this.materials.plastic, color: blue } );
+    this.shapes.corgi.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(1,1,1)),  { ...this.materials.corgiMtl } );
 
     // Draw mushroom placeholder
-    this.shapes.box.draw(caller, this.uniforms,  Mat4.translation(0,-1.5,0).times(Mat4.scale(1,1.5,1)), { ...this.materials.plastic, color: red } )
+    this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1.5,0).times(Mat4.scale(1,1.5,1)), { ...this.materials.plastic, color: red } )
 
     // Draw bouncing thing placeholder
     let particle_pos = this.msd.particles[0].position;
