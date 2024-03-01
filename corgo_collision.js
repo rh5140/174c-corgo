@@ -1,7 +1,7 @@
 import { defs, tiny } from './examples/common.js';
-import {Shape_From_File} from "./examples/obj-file-demo.js";
-import {Curve_Shape, Hermite_Spline} from "./spline.js";
-import {Mass_Spring_Damper} from "./particle_system.js";
+import { Shape_From_File } from "./examples/obj-file-demo.js";
+import { Mass_Spring_Damper } from "./particle_system.js";
+import { Curve_Shape, Hermite_Spline } from "./spline.js";
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
@@ -185,7 +185,7 @@ export class Corgo_collision extends Corgo_collision_base
     this.shapes.corgi.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(1,1,1)),  { ...this.materials.corgiMtl } );
 
     // Draw mushroom placeholder
-    this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1.5,0), { ...this.materials.plastic, color: red } );
+    this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), { ...this.materials.plastic, color: red } );
 
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(-10,2,0).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(0,2,-10).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
@@ -208,7 +208,7 @@ export class Corgo_collision extends Corgo_collision_base
         let x = position[0];
         let y = position[1];
         let z = position[2];
-        this.shapes.ball.draw( caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.25, 0.25, 0.25)), { ...this.materials.metal, color: blue } );
+        // this.shapes.ball.draw( caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.25, 0.25, 0.25)), { ...this.materials.metal, color: blue } );
         }
       }
 
@@ -233,7 +233,7 @@ export class Corgo_collision extends Corgo_collision_base
           const theta = Math.acos(v.dot(p));
           model_transform.pre_multiply(Mat4.rotation(theta, w[0], w[1], w[2]));
           model_transform.pre_multiply(Mat4.translation(center[0], center[1], center[2]));
-          this.shapes.box.draw(caller, this.uniforms, model_transform, { ...this.materials.plastic, color: red });
+          // this.shapes.box.draw(caller, this.uniforms, model_transform, { ...this.materials.plastic, color: red });
         }
       }
 
