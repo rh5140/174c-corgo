@@ -1,5 +1,7 @@
 import { defs, tiny } from './examples/common.js';
 import {Shape_From_File} from "./examples/obj-file-demo.js";
+import {Curve_Shape, Hermite_Spline} from "./spline.js";
+import {Mass_Spring_Damper} from "./particle_system.js";
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
@@ -11,366 +13,6 @@ class Corgo {
     this.velocity = vec3(0,0,0);
     this.acceleration = vec3(0,0,0);
   }
-}
-
-// Assignment 1 classes
-class Curve_Shape extends Shape {
-  constructor(curve_function, sample_count, size, curve_color=color( 1, 0, 0, 1 )) {
-    super("position", "normal");
-
-    this.material = { shader: new defs.Phong_Shader(), ambient: 1.0, color: curve_color }
-    this.sample_count = sample_count;
-    this.size = size;
-
-    if (curve_function && this.sample_count) {
-      for (let i = 0; i < this.size - 1; i++) {
-        for (let j = 0; j < this.sample_count + 1; j++) {
-          let t = j / this.sample_count;
-          this.arrays.position.push(curve_function(t, i, i+1));
-          this.arrays.normal.push(vec3(0, 0, 0)); // have to add normal to make Phong shader work.
-        }
-      }
-    }
-  }
-
-  draw(webgl_manager, uniforms) {
-    // call super with "LINE_STRIP" mode
-    super.draw(webgl_manager, uniforms, Mat4.identity(), this.material, "LINE_STRIP");
-  }
-
-  update(webgl_manager, uniforms, curve_function) {
-    if (curve_function && this.sample_count) {
-      for (let i = 0; i < this.sample_count + 1; i++) {
-        let t = 1.0 * i / this.sample_count;
-        this.arrays.position[i] = curve_function(t);
-      }
-    }
-    // this.arrays.position.forEach((v, i) => v = curve_function(i / this.sample_count));
-    this.copy_onto_graphics_card(webgl_manager.context);
-    // Note: vertex count is not changed.
-    // not tested if possible to change the vertex count.
-  }
-};
-
-class Hermite_Spline {
-  constructor() {
-    this.points = [];
-    this.tangents = [];
-    this.size = 0;
-  }
-  add_point(x,y,z,tx,ty,tz) {
-    this.points.push(vec3(x,y,z));
-    this.tangents.push(vec3(tx,ty,tz));
-    this.size += 1;
-  }
-  get_position(t, i_0, i_1) { // NEED TO INTERPOLATE
-    if (this.size < 2) { return vec3(0,0,0); }
-
-    let p_0 = this.points[i_0].copy(); // copy of p_0 position
-    let p_1 = this.points[i_1].copy(); // copy of p_1 position
-    
-    let scale = 1 / (this.size - 1);
-
-    let m_0 = this.tangents[i_0].copy().times(scale); // copy of m_0 position
-    let m_1 = this.tangents[i_1].copy().times(scale); // copy of m_1 position
-
-    // p(t) = (2t^3 - 3t^2 + 1)p_0 + (t^3 - 2t^2 + t)m_0 + (-2t^3 + 3t^2)p_0 + (t^3 - t^2)m_1
-    let h_00 = 2*t**3 - 3*t**2 + 1;
-    let h_10 = t**3 - 2*t**2 + t;
-    let h_01 = -2*t**3 + 3*t**2;
-    let h_11 = t**3 - t**2;
-
-    let a = p_0.times(h_00);
-    let b = p_1.times(h_01);
-    let c = m_0.times(h_10);
-    let d = m_1.times(h_11);
-    
-    return a.plus(b).plus(c).plus(d);
-  }
-  get_velocity(t, i_0, i_1) {
-    if (this.size < 2) { return vec3(0,0,0); }
-
-    let p_0 = this.points[i_0].copy(); // copy of p_0 position
-    let p_1 = this.points[i_1].copy(); // copy of p_1 position
-    
-    let scale = 1 / (this.size - 1);
-
-    let m_0 = this.tangents[i_0].copy().times(scale); // copy of m_0 position
-    let m_1 = this.tangents[i_1].copy().times(scale); // copy of m_1 position
-
-    // p(t) = (2t^3 - 3t^2 + 1)p_0 + (t^3 - 2t^2 + t)m_0 + (-2t^3 + 3t^2)p_0 + (t^3 - t^2)m_1
-    // v(t) = (6t^2 - 6t)p_1 + (3t^2 - 4t + 1)m_0 + (-6t^2 + 6t)p_0 + (3t^2 - 2t)m_1
-    let h_00 = 6*t**2 - 6*t;
-    let h_10 = 3*t**2 - 4*t + 1;
-    let h_01 = -6*t**2 + 6*t;
-    let h_11 = 3*t**2 - 2*t;
-
-    let a = p_0.times(h_00);
-    let b = p_1.times(h_01);
-    let c = m_0.times(h_10);
-    let d = m_1.times(h_11);
-    
-    return a.plus(b).plus(c).plus(d);
-  }
-  get_acceleration(t, i_0, i_1) {
-    if (this.size < 2) { return vec3(0,0,0); }
-
-    let p_0 = this.points[i_0].copy(); // copy of p_0 position
-    let p_1 = this.points[i_1].copy(); // copy of p_1 position
-    
-    let scale = 1 / (this.size - 1);
-
-    let m_0 = this.tangents[i_0].copy().times(scale); // copy of m_0 position
-    let m_1 = this.tangents[i_1].copy().times(scale); // copy of m_1 position
-
-    // p(t) = (2t^3 - 3t^2 + 1)p_0 + (t^3 - 2t^2 + t)m_0 + (-2t^3 + 3t^2)p_0 + (t^3 - t^2)m_1
-    // v(t) = (6t^2 - 6t)p_1 + (3t^2 - 4t + 1)m_0 + (-6t^2 + 6t)p_0 + (3t^2 - 2t)m_1
-    // a(t) = (12t - 6)p_1 + (6t - 4)m_0 + (-12t + 6)p_0 + (6t-2)m_1
-    let h_00 = 12*t - 6;
-    let h_10 = 3*t**2 - 4;
-    let h_01 = -12*t + 6;
-    let h_11 = 6*t - 2;
-
-    let a = p_0.times(h_00);
-    let b = p_1.times(h_01);
-    let c = m_0.times(h_10);
-    let d = m_1.times(h_11);
-    
-    return a.plus(b).plus(c).plus(d);
-  }
-  get_arc_length() {
-    let length = 0;
-    let sample_cnt = 1000;
-
-    let prev = this.get_position(0, 0, 1);
-    for (let i = 0; i < this.size - 1; i++) {
-      for (let j = 1; j < (sample_cnt + 1); j++) {
-        const t = j / sample_cnt;
-        const curr = this.get_position(t, i, i+1);
-        length += curr.minus(prev).norm();
-        prev = curr;
-      }
-    }
-    return length;
-  }
-};
-
-class Particle extends Shape {
-  constructor() {
-    super ("position", "normal", "texture_coords");
-    this.set = false;
-    this.mass = 1;
-    this.position = vec3(0,0,0);
-    this.velocity = vec3(0,0,0);
-    this.acceleration = vec3(0,0,0);
-    this.ext_force = vec3(0,0,0)
-    this.top = false;
-    this.ground_y = 0;
-  }
-  update_top(dt, spline) {
-    // Use spline
-    // position function
-    // velocity is derivative of position, accel is derivative of velocity
-  }
-  update(dt, technique) {
-    if (!this.set) {
-      throw "Particle: Initialization not complete.";
-    }
-
-    this.acceleration = this.ext_force.times(1 / this.mass);
-    const prev_position = this.position.copy();
-    const prev_velocity = this.velocity.copy();
-    let dx = prev_velocity.times(dt);
-    let dv = this.acceleration.times(dt);
-    if (technique == "euler") {
-      // forward euler
-      // x(t + dt) = x(t) + dt*v(t)
-      // v(t + dt) = v(t) + dt*a(t)
-      this.position = prev_position.plus(dx);
-      this.velocity = prev_velocity.plus(dv);
-    }
-    else if (technique == "symplectic") {
-      // symplectic euler
-      // v(t + dt) = v(t) + dt*a(t) = v(t) + dv
-      // x(t + dt) = x(t) + dt*v(t + dt)
-      this.velocity = prev_velocity.plus(dv);
-      dx = this.velocity.times(dt);
-      this.position = prev_position.plus(dx);
-    }
-    else if (technique == "verlet") {
-      // assumes acceleration only depends on position and not velocity
-      // x(t + dt) = x(t) + dt*v(t) + dt**2/2*a(t)
-      // v(t + dt) = v(t) + dt*(a(t) + a(t + dt))/2
-      const acc_term_factor = dt**2/2;
-      dx = prev_velocity.times(dt).plus(this.acceleration.times(acc_term_factor));
-      this.position = prev_position.plus(dx);
-      // just doing a(t) rather than averaging for now
-      this.velocity = prev_velocity.plus(dv);
-    }
-    else {
-      throw "Not a valid technique.";
-    }
-  }
-  set_properties(mass, x, y, z, vx, vy, vz) {
-    this.set = true;
-    this.mass = mass;
-    this.position = vec3(x,y,z);
-    this.velocity = vec3(vx,vy,vz);
-  }
-  set_velocity(vx, vy, vz) {
-    this.velocity = vec3(vx,vy,vz);
-  }
-  hit_ground() {
-    if (this.position[1] <= this.ground_y) {
-      console.log(this.ground_y);
-      return true;
-    }
-    else
-      return false;
-  }
-  set_ground_y(y) {
-    this.ground_y = y;
-  }
-};
-
-class Spring {
-  constructor() {
-    this.set = false;
-    this.particle_0 = null;
-    this.particle_1 = null;
-    this.ks = 0;
-    this.kd = 0;
-    this.rest_length = 0;
-  }
-  update() {
-    if (!this.set) {
-      throw "Spring: Initialization not complete.";
-    }
-
-    // Check lecture slides 05, page 6/18
-    const fe_ij = this.calculate_viscoelastic_forces();
-
-    // elastic collisions
-    // for some reason, add_by/subtract_by isn't working for me
-    this.particle_0.ext_force = this.particle_0.ext_force.plus(fe_ij);
-    this.particle_1.ext_force = this.particle_1.ext_force.minus(fe_ij);
-  }
-  connect(particle_0, particle_1, ks, kd, length) {
-    this.set = true;
-    this.particle_0 = particle_0;
-    this.particle_1 = particle_1;
-    this.ks = ks;
-    this.kd = kd;
-    this.rest_length = length;
-  }
-  calculate_viscoelastic_forces() {
-    const p_i = this.particle_0.position.copy();
-    const p_j = this.particle_1.position.copy();
-    const d_ij = p_j.minus(p_i);
-    const d_ij_mag = distance(p_j, p_i);
-    const d_ij_unit = d_ij.normalized();
-    const v_i = this.particle_0.velocity.copy();
-    const v_j = this.particle_1.velocity.copy();
-    const v_ij = v_j.minus(v_i);
-    const l_ij = this.rest_length;
-
-    // spring force (elastic)
-    // fs_ij = ks_ij * (d_ij - l_ij) * d_ij
-    const elastic_factor = this.ks * (d_ij_mag - l_ij); // ks_ij * (d_ij - l_ij)
-    const fs_ij = d_ij_unit.times(elastic_factor);
-
-    // damper force (viscous)
-    // fd_ij = -kd_ij * (v_ij dot d_ij) * d_ij;
-    const viscous_factor = this.kd * (v_ij.dot(d_ij_unit));
-    const fd_ij = d_ij_unit.times(viscous_factor);
-
-    const fe_ij = fs_ij.plus(fd_ij);
-
-    return fe_ij;
-  }
-};
-
-class Mass_Spring_Damper {
-  constructor() {
-    this.particles = [];
-    this.springs = [];
-    this.g_acc = vec3(0,-9.81,0);
-    this.ground_y = 0;
-    this.ground_ks = 5000;
-    this.ground_kd = 10;
-    this.technique = "symplectic";
-    this.spline = null;
-    // Don't need friction
-  }
-  update(dt) {
-    for (const p of this.particles) {
-      if (p.top) {
-      }
-      else {
-        p.ext_force = this.g_acc.times(p.mass);
-        // add ground collision and damping
-        // secret_calculate_ground_forces(this, p);
-        if (p.hit_ground()) {
-          const fn = this.calculate_ground_force(p);
-          p.ext_force = p.ext_force.plus(fn);
-        }
-      }
-    }
-    for (const s of this.springs) {
-      s.update();
-    }
-    for (const p of this.particles) {
-      if (p.top) {
-        p.update_top(dt, this.spline);
-      }
-      else {
-        p.update(dt, this.technique);
-      }
-    }
-  }
-  create_particles(num) {
-    for (let i = 0; i < num; i++) {
-      this.particles.push(new Particle());
-    }
-  }
-  set_all_particles_velocity(vx, vy, vz) {
-    for (let i = 0; i < this.particles.length; i++) {
-      particles[i].set_velocity(vx, vy, vz);
-    }
-  }
-  create_springs(num) {
-    for (let i = 0; i < num; i++) {
-      this.springs.push(new Spring());
-    }
-  }
-  calculate_ground_force(p) {
-    // f_n = ks * ((P_g - x(t)) dot n) * n - kd * (v(t) dot n) * n
-    // ((P_g - x(t) dot n)) = (0,x(t).y,0)
-    const n = vec3(0,1,0);
-    const v = p.velocity;
-    const elastic_factor = -this.ground_ks * p.position[1];
-    const elastic_component = n.times(elastic_factor);
-    const viscous_factor = this.ground_kd * v.dot(n);
-    const viscous_component = n.times(viscous_factor);
-    const fn = elastic_component.minus(viscous_component);
-    return fn;
-  }
-};
-
-function distance(pos_0, pos_1) {
-  let x_0 = pos_0[0];
-  let y_0 = pos_0[1];
-  let z_0 = pos_0[2];
-  let x_1 = pos_1[0];
-  let y_1 = pos_1[1];
-  let z_1 = pos_1[2];
-
-  let x_diff = x_0 - x_1;
-  let y_diff = y_0 - y_1;
-  let z_diff = z_0 - z_1;
-
-  const length = Math.sqrt(x_diff**2 + y_diff**2 + z_diff**2);
-  return length;
 }
 
 export
@@ -393,11 +35,14 @@ const Corgo_collision_base = defs.Corgo_collision_base =
         // would be redundant to tell it again.  You should just re-use the
         // one called "box" more than once in display() to draw multiple cubes.
         // Don't define more than one blueprint for the same thing here.
-        this.shapes = { 'box'  : new defs.Cube(),
+        this.shapes = {
+          'box'  : new defs.Cube(),
           'ball' : new defs.Subdivision_Sphere( 4 ),
           'axis' : new defs.Axis_Arrows(),
           'corgi': new Shape_From_File("assets/corgi.obj"),
-          'mushroom': new Shape_From_File("assets/mushroom.obj")};
+          'mushroom': new Shape_From_File("assets/mushroom.obj"),
+          'tree': new Shape_From_File("assets/tree.obj")
+        };
 
         // *** Materials: ***  A "material" used on individual shapes specifies all fields
         // that a Shader queries to light/color it properly.  Here we use a Phong shader.
@@ -406,17 +51,10 @@ const Corgo_collision_base = defs.Corgo_collision_base =
         const phong = new defs.Phong_Shader();
         const tex_phong = new defs.Textured_Phong();
         this.materials = {};
-        this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) }
+        this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 0.8, specularity: .0, color: color( .9,.5,.9,1 ) }
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
-        // this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
-
-        // Corgi texture
         this.materials.corgiMtl = { shader: tex_phong, ambient: 1.0, diffusivity: 1, specularity: 0, texture: new Texture( "assets/fur.png" ) };
-
-        this.ball_location = vec3(1, 1, 1);
-        this.ball_radius = 0.25;
-
-        // TODO: you should create the necessary shapes
+        this.materials.mushroomMtl = { shader: tex_phong, ambient: .2, diffusivity: .8, specularity: 0, texture: new Texture( "assets/mushroom.png" ) };
 
         // Spline
         this.spline = new Hermite_Spline();
@@ -532,11 +170,11 @@ export class Corgo_collision extends Corgo_collision_base
 
     // !!! Draw ground
     // TRANSLATED DOWN 3
-    let floor_transform = Mat4.translation(0, -3, 0).times(Mat4.scale(10, 0.01, 10));
-    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
+    let floor_transform = Mat4.translation(0, -3, 0).times(Mat4.scale(100, 0.01, 100));
+    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: color(2/255, 48/255, 32/255, 1) } );
 
     // TODO: you should draw spline here.
-    this.curve.draw(caller, this.uniforms);
+    // this.curve.draw(caller, this.uniforms);
 
     // Draw Cube Corgo
     let position = this.corgo.position;
@@ -546,7 +184,11 @@ export class Corgo_collision extends Corgo_collision_base
     this.shapes.corgi.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(1,1,1)),  { ...this.materials.corgiMtl } );
 
     // Draw mushroom placeholder
-    this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1.5,0).times(Mat4.scale(1,1.5,1)), { ...this.materials.plastic, color: red } )
+    this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1.5,0), { ...this.materials.plastic, color: red } );
+
+    this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(-10,2,0).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
+    this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(0,2,-10).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
+    this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(-8,2,-8).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
 
     // Draw bouncing thing placeholder
     let particle_pos = this.msd.particles[0].position;

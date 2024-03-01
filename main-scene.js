@@ -20,8 +20,6 @@ import { Transforms_Sandbox, Transforms_Sandbox_Base } from "./examples/transfor
 const Minimal_Webgl_Demo = defs.Minimal_Webgl_Demo;
 
 import { Corgo_collision } from "./corgo_collision.js";
-import { Part_three_chain } from "./part_three_chain.js";
-import { Part_two_spring } from "./part_two_spring.js";
 
 Object.assign (defs,
     {Minimal_Webgl_Demo},
@@ -34,14 +32,12 @@ Object.assign (defs,
     {Scene_To_Texture_Demo},
     {Text_Demo},
     {Transforms_Sandbox_Base, Transforms_Sandbox},
-    {Corgo_collision},
-    {Part_two_spring},
-    {Part_three_chain}
+    {Corgo_collision}
 );
 
 // ******************** SELECT THE DEMO TO DISPLAY:
 
-let scenes = {1: Corgo_collision, 2: Part_two_spring, 3: Part_three_chain};
+let scenes = {1: Corgo_collision};
 const scene_selector = (i) => scenes[i];
 
 const main_scene        = Corgo_collision; // default
