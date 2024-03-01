@@ -182,7 +182,7 @@ export class Corgo_collision extends Corgo_collision_base
     let x = position[0];
     let y = position[1];
     let z = position[2];
-    this.shapes.corgi.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(1,1,1)),  { ...this.materials.corgiMtl } );
+    this.shapes.corgi.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(generate_rotation(this.corgo.velocity.normalized(), vec3(1, 0, 0))),  { ...this.materials.corgiMtl } );
 
     // Draw mushroom placeholder
     this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), { ...this.materials.plastic, color: red } );
@@ -270,4 +270,11 @@ export class Corgo_collision extends Corgo_collision_base
     this.control_panel.innerHTML += "Part Three: (no buttons)";
     this.new_line();
   }
+}
+
+function generate_rotation(a, b){
+  let s = a.cross(b).dot(vec3(0, -1, 0));
+  let c = a.dot(b);
+  let angle = Math.atan2(s, c);
+  return Mat4.rotation(angle, 0, 1, 0);
 }
