@@ -41,7 +41,8 @@ const Corgo_collision_base = defs.Corgo_collision_base =
           'axis' : new defs.Axis_Arrows(),
           'corgi': new Shape_From_File("assets/corgi.obj"),
           'mushroom': new Shape_From_File("assets/mushroom.obj"),
-          'tree': new Shape_From_File("assets/tree.obj")
+          'tree': new Shape_From_File("assets/tree.obj"),
+          'cloud': new Shape_From_File("assets/cloud.obj"),
         };
 
         // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -112,7 +113,7 @@ const Corgo_collision_base = defs.Corgo_collision_base =
           // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
 
           // !!! Camera changed here
-          Shader.assign_camera( Mat4.look_at (vec3 (10, 10, 10), vec3 (0, 0, 0), vec3 (0, 1, 0)), this.uniforms );
+          Shader.assign_camera( Mat4.look_at (vec3 (10, 2, 10), vec3 (-100, 0, -100), vec3 (0, 1, 0)), this.uniforms );
         }
         this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 100 );
 
@@ -189,6 +190,10 @@ export class Corgo_collision extends Corgo_collision_base
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(-10,2,0).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(0,2,-10).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(-8,2,-8).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
+
+    this.shapes.cloud.draw(caller, this.uniforms,  Mat4.translation(-30,10,0).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(1, 1, 1, 1) } );
+    this.shapes.cloud.draw(caller, this.uniforms,  Mat4.translation(0,10,-30).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(1, 1, 1, 1) } );
+    this.shapes.cloud.draw(caller, this.uniforms,  Mat4.translation(-25,10,-25).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(1, 1, 1, 1) } );
 
     // Draw bouncing thing placeholder
     let particle_pos = this.msd.particles[0].position;
