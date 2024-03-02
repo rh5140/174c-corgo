@@ -2,18 +2,10 @@ import { defs, tiny } from './examples/common.js';
 import { Shape_From_File } from "./examples/obj-file-demo.js";
 import { Mass_Spring_Damper } from "./particle_system.js";
 import { Curve_Shape, Hermite_Spline } from "./spline.js";
+import {Corgo} from "./corgi.js";
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
-
-// Group project classes
-class Corgo {
-  constructor() {
-    this.position = vec3(0,0,0);
-    this.velocity = vec3(0,0,0);
-    this.acceleration = vec3(0,0,0);
-  }
-}
 
 export
 const Corgo_collision_base = defs.Corgo_collision_base =
@@ -69,7 +61,7 @@ const Corgo_collision_base = defs.Corgo_collision_base =
         this.curve = new Curve_Shape(curve_fn, this.sample_cnt, this.spline.size);
 
         // Corgo
-        this.corgo = new Corgo();
+        this.corgo = new Corgo(this.shapes.corgi, this.materials.corgiMtl);
 
         // Bouncing object
         const ks = 5000;
@@ -178,11 +170,7 @@ export class Corgo_collision extends Corgo_collision_base
     // this.curve.draw(caller, this.uniforms);
 
     // Draw Cube Corgo
-    let position = this.corgo.position;
-    let x = position[0];
-    let y = position[1];
-    let z = position[2];
-    this.shapes.corgi.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(generate_rotation(this.corgo.velocity.normalized(), vec3(1, 0, 0))),  { ...this.materials.corgiMtl } );
+    this.corgo.draw(caller, this.uniforms);
 
     // Draw mushroom placeholder
     this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), { ...this.materials.plastic, color: red } );
@@ -270,11 +258,4 @@ export class Corgo_collision extends Corgo_collision_base
     this.control_panel.innerHTML += "Part Three: (no buttons)";
     this.new_line();
   }
-}
-
-function generate_rotation(a, b){
-  let s = a.cross(b).dot(vec3(0, -1, 0));
-  let c = a.dot(b);
-  let angle = Math.atan2(s, c);
-  return Mat4.rotation(angle, 0, 1, 0);
 }
