@@ -46,8 +46,7 @@ const Corgo_collision_base = defs.Corgo_collision_base =
         this.materials = {};
         this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 0.8, specularity: .0, color: color( .9,.5,.9,1 ) }
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
-        this.materials.corgiMtl = { shader: tex_phong, ambient: 1.0, diffusivity: 1, specularity: 0, texture: new Texture( "assets/fur.png" ) };
-        this.materials.mushroomMtl = { shader: tex_phong, ambient: .2, diffusivity: .8, specularity: 0, texture: new Texture( "assets/mushroom.png" ) };
+        this.materials.mushroomMtl = { shader: tex_phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(1, 1, 1, 1), texture: new Texture( "assets/mushroom.png" )};
 
         // Spline
         this.spline = new Hermite_Spline();
@@ -173,7 +172,7 @@ export class Corgo_collision extends Corgo_collision_base
     this.corgo.draw(caller, this.uniforms);
 
     // Draw mushroom placeholder
-    this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), { ...this.materials.plastic, color: red } );
+    this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), this.materials.mushroomMtl);
 
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(-10,2,0).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(0,2,-10).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
@@ -230,16 +229,8 @@ export class Corgo_collision extends Corgo_collision_base
       if (this.running) {
         const t_next = this.t_sim + dt;
         while (this.t_sim < t_next) {
-          // updating top particle
-          // y = 0.5*Math.sin(x - PI/2) + 0.5
-          // const PI = Math.PI;
-          // let y = 0.5*Math.sin(this.t_sim/2 - PI/2) + 0.5;
-          // 0 <= y <= 4
-          // let idx = parseInt(Math.floor(y * 4));
-          // 0 <= idx <= 3
-          // let iter = 4 * (y - idx * 0.25);
           let num_points = this.spline.size - 1;
-          let idx = parseInt(Math.floor(this.t_sim % num_points));
+          let idx = Math.floor(this.t_sim % num_points);
           let iter = this.t_sim % 1.0;
           this.corgo.position = this.spline.get_position(iter, idx, idx+1);
           this.corgo.velocity = this.spline.get_velocity(iter, idx, idx+1);
