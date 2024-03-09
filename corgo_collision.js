@@ -83,6 +83,18 @@ const Corgo_collision_base = defs.Corgo_collision_base =
         this.timestep = 1/1000;
         this.t_sim = 0;
         this.running = true;
+
+
+
+        //corgo animation
+        this.thigh_angle = 0;
+        this.thigh_angle_change_rate = 0.1; 
+        this.thigh_max_angle = Math.PI/4;
+        this.thigh_forward = true;
+
+
+        this.tail_angle = 0;
+        this.tail_forward = true;
       }
 
       render_animation( caller )
@@ -241,6 +253,43 @@ export class Corgo_collision extends Corgo_collision_base
           this.t_sim += this.timestep;
         }
       }
+
+      //crappy corgo animation
+      //legs
+      if(this.thigh_forward){
+        this.thigh_angle += this.thigh_angle_change_rate;
+        this.corgo.thigh.articulation_matrix = this.corgo.thigh.articulation_matrix.times(Mat4.rotation(this.thigh_angle_change_rate, 0, 0, 1));
+        this.corgo.shoulder.articulation_matrix = this.corgo.shoulder.articulation_matrix.times(Mat4.rotation(-this.thigh_angle_change_rate, 0, 0, 1)); //shoulder, probably temp
+        if(this.thigh_angle >= this.thigh_max_angle){
+          this.thigh_forward = false;
+        }
+      }
+      else{
+        this.thigh_angle -= this.thigh_angle_change_rate;
+        this.corgo.thigh.articulation_matrix = this.corgo.thigh.articulation_matrix.times(Mat4.rotation(-this.thigh_angle_change_rate, 0, 0, 1));
+        this.corgo.shoulder.articulation_matrix = this.corgo.shoulder.articulation_matrix.times(Mat4.rotation(this.thigh_angle_change_rate, 0, 0, 1)); //shoulder, probably temp
+        if(this.thigh_angle <= -this.thigh_max_angle){
+          this.thigh_forward = true;
+        }
+      }
+      //console.log(this.thigh_angle);
+
+      let wag_rate = 0.1
+      if(this.tail_forward){
+        this.tail_angle += wag_rate;
+        this.corgo.tail_muscle.articulation_matrix = this.corgo.tail_muscle.articulation_matrix.times(Mat4.rotation(wag_rate, 1, 0, 0));
+        if(this.tail_angle >= Math.PI/6){
+          this.tail_forward = false;
+        }
+      }
+      else{
+        this.tail_angle -= wag_rate;
+        this.corgo.tail_muscle.articulation_matrix = this.corgo.tail_muscle.articulation_matrix.times(Mat4.rotation(-wag_rate, 1, 0, 0));
+        if(this.tail_angle <= -Math.PI/6){
+          this.tail_forward = true;
+        }
+      }
+
   }
 
   render_controls()
