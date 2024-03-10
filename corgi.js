@@ -1,10 +1,13 @@
 import {defs, tiny} from "./examples/common.js";
 import {Shape_From_File} from "./examples/obj-file-demo.js";
+import {KinematicBody, Arc, Node} from "./kinematic_body.js";
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
 export
-class Corgo {
+class Corgo extends KinematicBody{
     constructor() {
+        super();
+
         this.shapes = {
             'body': new Shape_From_File("assets/corgi/Body.obj"),
             'ears': new Shape_From_File("assets/corgi/Ears.obj"),
@@ -76,100 +79,12 @@ class Corgo {
     }
 
     draw(webgl_manager, uniforms) {
-        this.matrix_stack = [];
-        this._rec_draw(this.root,
-            this.transformation_matrix,
-            webgl_manager, uniforms
-        );
-    }
-
-    _rec_draw(arc, matrix, webgl_manager, uniforms) {
-        if (arc !== null) {
-            const L = arc.location_matrix;
-            const A = arc.articulation_matrix;
-            matrix.post_multiply(L.times(A));
-            this.matrix_stack.push(matrix.copy());
-
-            const node = arc.child_node;
-            const T = node.transform_matrix;
-            matrix.post_multiply(T);
-            node.shape.draw(webgl_manager, uniforms, matrix, node.material);
-
-            matrix = this.matrix_stack.pop();
-            for (const next_arc of node.children_arcs) {
-                this.matrix_stack.push(matrix.copy());
-                this._rec_draw(next_arc, matrix, webgl_manager, uniforms, node.material);
-                matrix = this.matrix_stack.pop();
-            }
-        }
+        super.draw(webgl_manager, uniforms, this.transformation_matrix)
     }
 
     get transformation_matrix(){
         return Mat4.translation(this.position[0], this.position[1], this.position[2])
             .times(generate_rotation(this.velocity.normalized(), vec3(1, 0, 0)));
-    }
-
-    compute_global_transform(arc){
-        let out = this.transformation_matrix;
-        let p = arc;
-        while(p.parent_node != null){
-            out.pre_multiply(p.articulation_matrix);
-            out.pre_multiply(p.location_matrix);
-            p = p.parent_node.parent_arc;
-        }
-        out.pre_multiply(p.articulation_matrix);
-        out.pre_multiply(p.location_matrix);
-
-        return out;
-    }
-}
-
-class Node {
-    constructor(name, shape, material, transform) {
-        this.name = name;
-        this.shape = shape;
-        this.material = material;
-        this.transform_matrix = transform;
-        this.children_arcs = [];
-    }
-}
-
-class Arc {
-    constructor(name, parent, child, location) {
-        this.name = name;
-        this.parent_node = parent;
-        this.child_node = child;
-        if(child) this.child_node.parent_arc = this;
-        this.location_matrix = location;
-        this.articulation_matrix = Mat4.identity();
-
-        this.rotation = {};
-        this.translation = {};
-    }
-
-    set_dof(rx, ry, rz, tx = false, ty = false, tz = false){
-        if(rx) this.rotation.x = 0.01;
-        if(ry) this.rotation.y = 0.01;
-        if(rz) this.rotation.z = 0.01;
-        if(tx) this.translation.x = 0.01;
-        if(ty) this.translation.y = 0.01;
-        if(tz) this.translation.z = 0.01;
-
-        this.update_articulation_matrix();
-    }
-
-    update_articulation_matrix(){
-        this.articulation_matrix = Mat4.identity();
-        this.articulation_matrix.pre_multiply(Mat4.translation(this.translation.x ? this.translation.x : 0, this.translation.y ? this.translation.y : 0, this.translation.z ? this.translation.z : 0));
-        if(this.rotation.x){
-            this.articulation_matrix.pre_multiply(Mat4.rotation(this.rotation.x, 1, 0, 0));
-        }
-        if(this.rotation.y){
-            this.articulation_matrix.pre_multiply(Mat4.rotation(this.rotation.y, 0, 1, 0));
-        }
-        if(this.rotation.z){
-            this.articulation_matrix.pre_multiply(Mat4.rotation(this.rotation.z, 0, 0, 1));
-        }
     }
 }
 
