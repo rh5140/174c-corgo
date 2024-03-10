@@ -3,6 +3,7 @@ import { Shape_From_File } from "./examples/obj-file-demo.js";
 import { Mass_Spring_Damper } from "./particle_system.js";
 import { Curve_Shape, Hermite_Spline } from "./spline.js";
 import {Corgo} from "./corgi.js";
+import {Flower} from "./flower.js";
 
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
@@ -60,7 +61,10 @@ const Corgo_collision_base = defs.Corgo_collision_base =
         this.curve = new Curve_Shape(curve_fn, this.sample_cnt, this.spline.size);
 
         // Corgo
-        this.corgo = new Corgo(this.shapes.corgi, this.materials.corgiMtl);
+        this.corgo = new Corgo();
+
+        // Flower
+        this.flower = new Flower();
 
         // Bouncing object
         const ks = 5000;
@@ -183,8 +187,14 @@ export class Corgo_collision extends Corgo_collision_base
     // Draw Cube Corgo
     this.corgo.draw(caller, this.uniforms);
 
+    // Draw Flower
+    this.flower.draw(caller, this.uniforms);
+    let ik_target = Mat4.translation(3, 5, 2).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+    this.shapes.corgi.draw(caller, this.uniforms, ik_target, {...this.materials.plastic, color: color(1, 1, 1, 0.3)});
+    this.shapes.corgi.draw(caller, this.uniforms, this.flower.compute_global_transform(this.flower.petalsjoint).times(this.flower.petals_node.transform_matrix), {...this.materials.plastic, color: color(1, 1, 1, 0.3)});
+
     // Draw mushroom placeholder
-    this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), this.materials.mushroomMtl);
+    // this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), this.materials.mushroomMtl);
 
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(-10,2,0).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
     this.shapes.tree.draw(caller, this.uniforms,  Mat4.translation(0,2,-10).times(Mat4.scale(3, 3, 3)), { ...this.materials.plastic, color: color(0, 1, 0, 1) } );
@@ -197,7 +207,7 @@ export class Corgo_collision extends Corgo_collision_base
     // Draw bouncing thing placeholder
     let particle_pos = this.msd.particles[0].position;
     let particle_y = particle_pos[1];
-    this.shapes.box.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+1,0), { ...this.materials.plastic, color: white } )
+    // this.shapes.box.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+1,0), { ...this.materials.plastic, color: white } )
 
     // Draw chain
     for (let i = 0; i < this.msd.particles.length; i++) {
@@ -247,6 +257,8 @@ export class Corgo_collision extends Corgo_collision_base
           this.corgo.position = this.spline.get_position(iter, idx, idx+1);
           this.corgo.velocity = this.spline.get_velocity(iter, idx, idx+1);
           this.corgo.acceleration = this.spline.get_velocity(iter, idx, idx + 1);
+
+          this.flower.update_IK(this.flower.eyes_node, ik_target)
 
           // normal update
           this.msd.update(this.timestep)

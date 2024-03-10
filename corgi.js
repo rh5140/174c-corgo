@@ -31,7 +31,7 @@ class Corgo extends KinematicBody{
 
         // body node
         const body_transform = Mat4.scale(1, 1, 1);
-        this.body_node = new Node("body", this.shapes.body, this.materials.body, body_transform);
+        this.body_node = new Node("body", this.shapes.body, this.materials.body, body_transform, Mat4.identity());
         // root->torso
         const root_location = Mat4.translation(0, 0, 0);
         this.root = new Arc("root", null, this.body_node, root_location);
@@ -39,8 +39,7 @@ class Corgo extends KinematicBody{
 
         // ears node
         let ears_transform = Mat4.scale(.4, .4, .4);
-        ears_transform.pre_multiply(Mat4.translation(-.1, .3, 0));
-        this.ears_node = new Node("ears", this.shapes.ears, this.materials.ears, ears_transform);
+        this.ears_node = new Node("ears", this.shapes.ears, this.materials.ears, ears_transform, Mat4.translation(-.1, .3, 0));
         // body->ear_muscles->ears
         const ear_muscles_location = Mat4.translation(1, .6, 0);
         this.ear_muscles = new Arc("ear_muscles", this.body_node, this.ears_node, ear_muscles_location);
@@ -49,8 +48,7 @@ class Corgo extends KinematicBody{
 
         // back leg node
         let back_leg_transform = Mat4.scale(.35, .35, .35);
-        back_leg_transform.pre_multiply(Mat4.translation(.1, -.4, 0));
-        this.back_leg_node = new Node("ears", this.shapes.back_leg, this.materials.back_leg, back_leg_transform);
+        this.back_leg_node = new Node("ears", this.shapes.back_leg, this.materials.back_leg, back_leg_transform, Mat4.translation(.1, -.4, 0));
         // body->thigh->back_legs
         const thigh_location = Mat4.translation(-1.16, -.5, 0);
         this.thigh = new Arc("thigh", this.body_node, this.back_leg_node, thigh_location);
@@ -59,8 +57,7 @@ class Corgo extends KinematicBody{
 
         // front leg node
         let front_leg_transform = Mat4.scale(.35, .35, .35);
-        front_leg_transform.pre_multiply(Mat4.translation(-.1, -.3, 0));
-        this.front_leg_node = new Node("ears", this.shapes.front_leg, this.materials.front_leg, front_leg_transform);
+        this.front_leg_node = new Node("ears", this.shapes.front_leg, this.materials.front_leg, front_leg_transform, Mat4.translation(-.1, -.3, 0));
         // body->thigh->back_legs
         const shoulder_location = Mat4.translation(.96, -.56, 0);
         this.shoulder = new Arc("shoulder", this.body_node, this.front_leg_node, shoulder_location);
@@ -69,13 +66,16 @@ class Corgo extends KinematicBody{
 
         // tail node
         let tail_transform = Mat4.scale(.35, .35, .35);
-        tail_transform.pre_multiply(Mat4.translation(.1, .6, 0));
-        this.tail_node = new Node("tail", this.shapes.tail, this.materials.tail, tail_transform);
+        this.tail_node = new Node("tail", this.shapes.tail, this.materials.tail, tail_transform, Mat4.translation(.1, .6, 0));
         // body->tail_muscle->tail
         const tail_muscle_location = Mat4.translation(-1.5, 0, 0);
         this.tail_muscle = new Arc("tail_muscle", this.body_node, this.tail_node, tail_muscle_location);
         this.tail_muscle.set_dof(true, true, true);
         this.body_node.children_arcs.push(this.tail_muscle)
+    }
+
+    compute_global_transform(arc) {
+        return super.compute_global_transform(arc, this.transformation_matrix);
     }
 
     draw(webgl_manager, uniforms) {
