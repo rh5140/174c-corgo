@@ -149,7 +149,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             // Springs for planks maybe?
             let plank_ks = 5000;
             let plank_kd = 500;
-            let plank_length = 3.1623
+            let plank_length = 2
             this.msd.create_springs(9);
             this.msd.springs[16].connect(this.msd.particles[0], this.msd.particles[9], plank_ks, plank_kd, plank_length);
             this.msd.springs[17].connect(this.msd.particles[1], this.msd.particles[10], plank_ks, plank_kd, plank_length);
