@@ -36,34 +36,28 @@ class KinematicBody{
         }
     }
 
-    update_IK(end_eff, goal, transform, orient=false, start_eff=null, k=0.01, damping=1.5, strength=0.02){
+    update_IK(end_eff, goal, transform, orient=false, start_eff=null, k=0.01, damping=0.1, strength=0.5){
         let e_global = this.compute_global_transform(end_eff.parent_arc, transform).times(end_eff.location_matrix);
 
-        let e_rot = e_global.sub_block([ 0,0 ], [ 3,3 ])
-        let g_rot = goal.sub_block([ 0,0 ], [ 3,3 ])
-        let orien_diff = orient ? calc_orient_error(e_rot, g_rot) : vec3(0, 0, 0)
-
         let e_pos = vec3(e_global[0][3], e_global[1][3], e_global[2][3]);
-        let g_pos = vec3(goal[0][3], goal[1][3], goal[2][3]);
+        let g_pos = goal;
         let pos_diff = g_pos.minus(e_pos);
 
-        if (pos_diff.norm() < 0.1 && orien_diff.norm() < 0.01) return;
+        let diff = new Matrix([pos_diff[0]], [pos_diff[1]], [pos_diff[2]]);
 
-        let diff = new Matrix([pos_diff[0]], [pos_diff[1]], [pos_diff[2]], [orien_diff[0]], [orien_diff[1]], [orien_diff[2]]);
-
-        let compute = this.compute_jacobian(end_eff, transform);
+        let compute = this.compute_jacobian(end_eff, transform, start_eff);
         let J = compute.regular;
         let JT = compute.transpose;
         let JP = JT.times(new Matrix(...math.inv(J.times(JT).plus(this.generate_identity(JT.length).times(damping)))));
 
-        let DOFDiff = this.calc_DOF_diff(end_eff);
+        let DOFDiff = this.calc_DOF_diff(end_eff, start_eff);
 
         let d_theta = JP.times(diff.times(k))
             .plus((this.generate_identity(JT.length).minus(JP.times(J))).times(DOFDiff).times(strength));
 
         let curNode = end_eff;
         let index = 0;
-        while(curNode != null){
+        while(curNode !== start_eff){
             let arc = curNode.parent_arc;
             if("x" in arc.rotation){
                 arc.rotation.x += d_theta[index][0];
@@ -93,6 +87,8 @@ class KinematicBody{
 
             curNode = arc.parent_node;
         }
+
+        return (pos_diff.norm() < 0.1);
     }
 
     generate_identity(size){
@@ -107,47 +103,47 @@ class KinematicBody{
         return new Matrix(...arr_out);
     }
 
-    compute_jacobian(end_eff, transform){
+    compute_jacobian(end_eff, transform, start_eff=null){
         let e_global = this.compute_global_transform(end_eff.parent_arc, transform).times(end_eff.transform_matrix);
         let e_pos = vec3(e_global[0][3], e_global[1][3], e_global[2][3]);
 
         let curNode = end_eff;
         let array_Jac = [];
-        while(curNode != null){
+        while(curNode !== start_eff){
             let arc = curNode.parent_arc;
             let j_global = this.compute_global_transform(arc, transform);
             if("x" in arc.rotation){
                 let axis = vec3(j_global[0][0], j_global[1][0], j_global[2][0]);
                 let j_pos = vec3(j_global[0][3], j_global[1][3], j_global[2][3]);
 
-                array_Jac.push(Array.from(axis.cross(e_pos.minus(j_pos))).concat(Array.from(axis)));
+                array_Jac.push(Array.from(axis.cross(e_pos.minus(j_pos))));
             }
             if("y" in arc.rotation){
                 let axis = vec3(j_global[0][1], j_global[1][1], j_global[2][1]);
                 let j_pos = vec3(j_global[0][3], j_global[1][3], j_global[2][3]);
 
-                array_Jac.push(Array.from(axis.cross(e_pos.minus(j_pos))).concat(Array.from(axis)));
+                array_Jac.push(Array.from(axis.cross(e_pos.minus(j_pos))));
             }
             if("z" in arc.rotation){
                 let axis = vec3(j_global[0][2], j_global[1][2], j_global[2][2]);
                 let j_pos = vec3(j_global[0][3], j_global[1][3], j_global[2][3]);
 
-                array_Jac.push(Array.from(axis.cross(e_pos.minus(j_pos))).concat(Array.from(axis)));
+                array_Jac.push(Array.from(axis.cross(e_pos.minus(j_pos))));
             }
             if("x" in arc.translation){
                 let axis = vec3(j_global[0][0], j_global[1][0], j_global[2][0]).normalized();
 
-                array_Jac.push(Array.from(axis).concat([0, 0, 0]));
+                array_Jac.push(Array.from(axis));
             }
             if("y" in arc.translation){
                 let axis = vec3(j_global[0][1], j_global[1][1], j_global[2][1]).normalized();
 
-                array_Jac.push(Array.from(axis).concat([0, 0, 0]));
+                array_Jac.push(Array.from(axis));
             }
             if("z" in arc.translation){
                 let axis = vec3(j_global[0][2], j_global[1][2], j_global[2][2]).normalized();
 
-                array_Jac.push(Array.from(axis).concat([0, 0, 0]));
+                array_Jac.push(Array.from(axis));
             }
             curNode = arc.parent_node;
         }
@@ -160,10 +156,10 @@ class KinematicBody{
         };
     }
 
-    calc_DOF_diff(end_eff){
+    calc_DOF_diff(end_eff, start_eff=null){
         let curNode = end_eff;
         let diff = [];
-        while(curNode != null){
+        while(curNode !== start_eff){
             let arc = curNode.parent_arc;
 
             if("x" in arc.rotation) diff.push("x" in arc.rotation_pref ? [arc.rotation_pref.x - arc.rotation.x] : [0]);
@@ -259,62 +255,3 @@ class Arc {
         }
     }
 }
-
-function calc_orient_error(e_rot, g_rot) {
-    let matrix = g_rot.times(e_rot.transposed())
-
-    // Convert the rotation matrix to a quaternion
-    let trace
-    let qx, qy, qz, qw;
-
-    if (matrix[2][2] < 0) {
-        if(matrix[0][0] > matrix[1][1]){
-            trace = 1 + matrix[0][0] - matrix[1][1] - matrix[2][2];
-
-            qw = trace;
-            qx = (matrix[0][1] + matrix[1][0]);
-            qy = (matrix[2][0] + matrix[0][2]);
-            qz = (matrix[1][2] - matrix[2][1]);
-        }
-        else {
-            trace = 1 - matrix[0][0] + matrix[1][1] - matrix[2][2];
-
-            qw = (matrix[0][1] + matrix[1][0]);
-            qx = trace;
-            qy = (matrix[1][2] + matrix[2][1]);
-            qz = (matrix[2][0] - matrix[0][2]);
-        }
-    } else {
-        if(matrix[0][0] < -matrix[1][1]){
-            trace = 1 - matrix[0][0] - matrix[1][1] + matrix[2][2];
-
-            qw = (matrix[2][0] + matrix[0][2]);
-            qx = (matrix[1][2] + matrix[2][1]);
-            qy = trace;
-            qz = (matrix[0][1] - matrix[1][0]);
-        }
-        else {
-            trace = 1 + matrix[0][0] + matrix[1][1] + matrix[2][2];
-
-            qw = (matrix[1][2] - matrix[2][1]);
-            qx = (matrix[2][0] - matrix[0][2]);
-            qy = (matrix[0][1] - matrix[1][0]);
-            qz = trace;
-        }
-    }
-    let quat = vec4(qw, qx, qy, qz);
-    quat = quat.times(0.5 / (math.sqrt(trace) + 0.00001))
-    if(quat[0] < 0) quat = quat.times(-1)
-
-    let angle = 2 * math.acos(quat[0]);
-    let axis = vec3(quat[1], quat[2], quat[3]);
-
-    return axis.times(angle)
-}
-
-// function calc_orient_error(e_rot, g_rot){
-//     let m = g_rot.times(e_rot.transposed())
-//     let vue = math.acos((m[0][0] + m[1][1] + m[2][2] - 1)/2);
-//     let r = vec3(m[2][1] - m[1][2], m[0][2] - m[2][0], m[1][0] - m[0][1]).times(1 / (2 * math.sin(vue) + 0.001))
-//     return r.times(math.sin(vue))
-// }
