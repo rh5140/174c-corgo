@@ -89,6 +89,8 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.msd = new Mass_Spring_Damper();
             this.msd.ground_y = 3; // HARDCODING HEIGHT OF MUSHROOM FOR NOW
             this.msd.spline = this.spline;
+
+            // Creating one rope of the rope bridge
             this.msd.create_particles(9);
             this.msd.particles[0].top =  true;
             this.msd.particles[8].top =  true;
@@ -103,6 +105,25 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.msd.particles[7].set_properties(1, 5, 5, -1, 0, 5, 0);
             this.msd.particles[8].set_properties(1, 6, 5, -1, 0, 5, 0);
 
+            // Create the other rope on the rope bridge
+            this.msd.create_particles(9);
+            this.msd.particles[9].top =  true;
+            this.msd.particles[17].top =  true;
+            let x_offset = 0;
+            let y_offset = 0;
+            let z_offset = 2;
+            this.msd.particles[9].set_properties(1, -1 - x_offset, 5 - y_offset, -1 - z_offset, 0, 0, 0);
+            this.msd.particles[10].set_properties(1, 0 - x_offset, 5 - y_offset, -0.1 - z_offset, 0, 5, 0);
+            this.msd.particles[11].set_properties(1, 1 - x_offset, 5 - y_offset, -0.1 - z_offset, 0, 5, 0);
+            this.msd.particles[12].set_properties(1, 1 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
+            this.msd.particles[13].set_properties(1, 2 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
+            this.msd.particles[14].set_properties(1, 3 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
+            this.msd.particles[15].set_properties(1, 4 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
+            this.msd.particles[16].set_properties(1, 5 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
+            this.msd.particles[17].set_properties(1, 6 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
+
+
+            // Springs for one side of the rope bridge
             this.msd.create_springs(8);
             this.msd.springs[0].connect(this.msd.particles[0], this.msd.particles[1], ks, kd, length);
             this.msd.springs[1].connect(this.msd.particles[1], this.msd.particles[2], ks, kd, length);
@@ -113,6 +134,32 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.msd.springs[6].connect(this.msd.particles[6], this.msd.particles[7], ks, kd, length);
             this.msd.springs[7].connect(this.msd.particles[7], this.msd.particles[8], ks, kd, length);
             // this.msd.springs[8].connect(this.msd.particles[8], this.msd.particles[0], ks, kd, length);
+
+            // Springs for the other side of the rope bridge
+            this.msd.create_springs(8);
+            this.msd.springs[8].connect(this.msd.particles[9], this.msd.particles[10], ks, kd, length);
+            this.msd.springs[9].connect(this.msd.particles[10], this.msd.particles[11], ks, kd, length);
+            this.msd.springs[10].connect(this.msd.particles[11], this.msd.particles[12], ks, kd, length);
+            this.msd.springs[11].connect(this.msd.particles[12], this.msd.particles[13], ks, kd, length);
+            this.msd.springs[12].connect(this.msd.particles[13], this.msd.particles[14], ks, kd, length);
+            this.msd.springs[13].connect(this.msd.particles[14], this.msd.particles[15], ks, kd, length);
+            this.msd.springs[14].connect(this.msd.particles[15], this.msd.particles[16], ks, kd, length);
+            this.msd.springs[15].connect(this.msd.particles[16], this.msd.particles[17], ks, kd, length);
+
+            // Springs for planks maybe?
+            let plank_ks = 5000;
+            let plank_kd = 500;
+            let plank_length = 3.1623
+            this.msd.create_springs(9);
+            this.msd.springs[16].connect(this.msd.particles[0], this.msd.particles[9], plank_ks, plank_kd, plank_length);
+            this.msd.springs[17].connect(this.msd.particles[1], this.msd.particles[10], plank_ks, plank_kd, plank_length);
+            this.msd.springs[18].connect(this.msd.particles[2], this.msd.particles[11], plank_ks, plank_kd, plank_length);
+            this.msd.springs[19].connect(this.msd.particles[3], this.msd.particles[12], plank_ks, plank_kd, plank_length);
+            this.msd.springs[20].connect(this.msd.particles[4], this.msd.particles[13], plank_ks, plank_kd, plank_length);
+            this.msd.springs[21].connect(this.msd.particles[5], this.msd.particles[14], plank_ks, plank_kd, plank_length);
+            this.msd.springs[22].connect(this.msd.particles[6], this.msd.particles[15], plank_ks, plank_kd, plank_length);
+            this.msd.springs[23].connect(this.msd.particles[7], this.msd.particles[16], plank_ks, plank_kd, plank_length);
+            this.msd.springs[24].connect(this.msd.particles[8], this.msd.particles[17], plank_ks, plank_kd, plank_length);
 
             this.timestep = 1 / 1000;
             this.t_sim = 0;
@@ -255,7 +302,7 @@ export class Rope_bridge extends Rope_bridge_base {                             
         let particle_y = particle_pos[1];
         // this.shapes.box.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+1,0), { ...this.materials.plastic, color: white } )
 
-        // Draw chain
+        // Draw chain (now a rope)
         for (let i = 0; i < this.msd.particles.length; i++) {
             let particle = this.msd.particles[i];
             if (particle.set) {
@@ -265,6 +312,10 @@ export class Rope_bridge extends Rope_bridge_base {                             
                 let z = position[2];
                 console.log("position: " + position)
                 this.shapes.ball.draw( caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.25, 0.25, 0.25)), { ...this.materials.metal, color: blue } );
+
+
+                // Draw planks
+                // this.shapes.box.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.3, 0.01, 1)), { ...this.materials.plastic, color: red });
             }
         }
 
@@ -292,6 +343,10 @@ export class Rope_bridge extends Rope_bridge_base {                             
                 this.shapes.box.draw(caller, this.uniforms, model_transform, { ...this.materials.plastic, color: red });
             }
         }
+
+
+
+
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
