@@ -49,8 +49,8 @@ class Flower extends KinematicBody{
         this.bottom_node.children_arcs.push(this.midjoint)
 
         // topsection node
-        let topsection_transform = Mat4.scale(1.5, 1.5, 1.5);
-        this.topsection_node = new Node("topsection", this.shapes.upper, this.materials.upper, topsection_transform, Mat4.translation(0, 1.05, 0.03));
+        let topsection_transform = Mat4.scale(1.5, 1, 1.5);
+        this.topsection_node = new Node("topsection", this.shapes.upper, this.materials.upper, topsection_transform, Mat4.translation(0, .85, 0.03));
         // bottom->topjoint->topsection
         const topjoint_location = Mat4.translation(-0.045, 2.4, -0.04);
         this.topjoint = new Arc("topjoint", this.midsection_node, this.topsection_node, topjoint_location);
