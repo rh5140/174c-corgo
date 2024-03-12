@@ -300,9 +300,9 @@ export class Corgo_collision extends Corgo_collision_base {                     
         counter = 0
         while(counter < 10){
           counter++
-          if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
-          if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
-          if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+          // if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
+          // if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+          // if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
         }
 
         //crappy corgo animation
