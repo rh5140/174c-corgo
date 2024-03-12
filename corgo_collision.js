@@ -107,7 +107,7 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
 
             //corgo animation
             this.thigh_angle = 0;
-            this.thigh_angle_change_rate = 0.1;
+            this.thigh_angle_change_rate = 0.05;
             this.thigh_max_angle = Math.PI / 4;
             this.thigh_forward = true;
 
@@ -305,39 +305,35 @@ export class Corgo_collision extends Corgo_collision_base {                     
           if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
         }
 
-      // this.flower.petalsjoint.rotation = this.flower.petalsjoint.rotation_pref
-      // this.flower.topjoint.rotation = this.flower.topjoint.rotation_pref
-      // this.flower.midjoint.rotation = this.flower.midjoint.rotation_pref
-
         //crappy corgo animation
         //legs
         if (this.thigh_forward) {
             this.thigh_angle += this.thigh_angle_change_rate;
-            this.corgo.thigh.articulation_matrix = this.corgo.thigh.articulation_matrix.times(Mat4.rotation(this.thigh_angle_change_rate, 0, 0, 1));
-            this.corgo.shoulder.articulation_matrix = this.corgo.shoulder.articulation_matrix.times(Mat4.rotation(-this.thigh_angle_change_rate, 0, 0, 1)); //shoulder, probably temp
+            this.corgo.thigh.rotation.z += this.thigh_angle_change_rate;
+            this.corgo.shoulder.rotation.z -= this.thigh_angle_change_rate;
             if (this.thigh_angle >= this.thigh_max_angle) {
                 this.thigh_forward = false;
             }
         } else {
             this.thigh_angle -= this.thigh_angle_change_rate;
-            this.corgo.thigh.articulation_matrix = this.corgo.thigh.articulation_matrix.times(Mat4.rotation(-this.thigh_angle_change_rate, 0, 0, 1));
-            this.corgo.shoulder.articulation_matrix = this.corgo.shoulder.articulation_matrix.times(Mat4.rotation(this.thigh_angle_change_rate, 0, 0, 1)); //shoulder, probably temp
+            this.corgo.thigh.rotation.z -= this.thigh_angle_change_rate;
+            this.corgo.shoulder.rotation.z += this.thigh_angle_change_rate;
             if (this.thigh_angle <= -this.thigh_max_angle) {
                 this.thigh_forward = true;
             }
         }
         //console.log(this.thigh_angle);
 
-        let wag_rate = 0.1
+        let wag_rate = 0.05
         if (this.tail_forward) {
             this.tail_angle += wag_rate;
-            this.corgo.tail_muscle.articulation_matrix = this.corgo.tail_muscle.articulation_matrix.times(Mat4.rotation(wag_rate, 1, 0, 0));
+            this.corgo.tail_muscle.rotation.x += wag_rate;
             if (this.tail_angle >= Math.PI / 6) {
                 this.tail_forward = false;
             }
         } else {
             this.tail_angle -= wag_rate;
-            this.corgo.tail_muscle.articulation_matrix = this.corgo.tail_muscle.articulation_matrix.times(Mat4.rotation(-wag_rate, 1, 0, 0));
+            this.corgo.tail_muscle.rotation.x -= wag_rate;
             if (this.tail_angle <= -Math.PI / 6) {
                 this.tail_forward = true;
             }
