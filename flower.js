@@ -18,13 +18,14 @@ class Flower extends KinematicBody{
         };
 
         const phong = new defs.Phong_Shader();
+        const tex_phong = new defs.Textured_Phong();
         this.materials = {
-            'bottom': { shader: phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(43/255,182/255,115/255, 1) },
-            'segment': { shader: phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(43/255,182/255,115/255, 1) },
-            'upper': { shader: phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(43/255,182/255,115/255, 1) },
-            'petals': { shader: phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(247/255, 186/255, 33/255, 1) },
-            'eyes': { shader: phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(0.5, 0, 0, 1)},
-            'hands': { shader: phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(115/255, 180/255, 43/255, 1) },
+            'bottom': { shader: tex_phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(1, 1, 1, 1), texture: new Texture( "assets/flower/Bottom.png" ) },
+            'segment': { shader: tex_phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(1, 1, 1, 1), texture: new Texture( "assets/flower/Segment.png" ) },
+            'upper': { shader: tex_phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(1, 1, 1, 1), texture: new Texture( "assets/flower/Upper.png" ) },
+            'petals': { shader: tex_phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(1, 1, 1, 1), texture: new Texture( "assets/flower/Petals.png" ) },
+            'eyes': { shader: tex_phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(1, 1, 1, 1), texture: new Texture( "assets/flower/Eyes.png" ) },
+            'hands': { shader: tex_phong, ambient: .2, diffusivity: 1, specularity: 0, color: color(1, 1, 1, 1), texture: new Texture( "assets/flower/Hands.png" ) },
         };
 
         this.position = vec3(0,0,0);
@@ -39,9 +40,9 @@ class Flower extends KinematicBody{
 
         // midsection node
         let midsection_transform = Mat4.scale(1.2, 1.2, 1.2);
-        this.midsection_node = new Node("midsection", this.shapes.segment, this.materials.segment, midsection_transform, Mat4.translation(0, 1.2, 0));
+        this.midsection_node = new Node("midsection", this.shapes.segment, this.materials.segment, midsection_transform, Mat4.translation(0, 1.25, 0));
         // bottom->midjoint->midsection
-        const midjoint_location = Mat4.translation(-0.045, -0.4, -0.04);
+        const midjoint_location = Mat4.translation(-0.045, -0.3, -0.04);
         this.midjoint = new Arc("midjoint", this.bottom_node, this.midsection_node, midjoint_location);
         this.midjoint.set_dof(false, false, true);
         this.midjoint.rotation_pref.z = -math.PI / 8
