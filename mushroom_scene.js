@@ -1,6 +1,8 @@
-import {defs} from "./examples/common";
+import {defs, tiny} from "./examples/common.js";
+import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
+const {vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
 
-export class Part_one_hermite
+export class Part_one_hermite extends Component
 {
     init()
     {
@@ -31,7 +33,6 @@ export class Part_one_hermite
         this.materials = {};
         this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) }
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
-        this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
 
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
