@@ -4,6 +4,7 @@ import {Mass_Spring_Damper} from "./particle_system.js";
 import {Curve_Shape, Hermite_Spline} from "./spline.js";
 import {Corgo} from "./corgi.js";
 import {Flower} from "./flower.js";
+import {Tree} from "./tree.js";
 
 // Pull these names into this module's scope for convenience:
 const {vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
@@ -29,10 +30,9 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
                 'box': new defs.Cube(),
                 'ball': new defs.Subdivision_Sphere(4),
                 'axis': new defs.Axis_Arrows(),
-                'corgi': new Shape_From_File("assets/corgi.obj"),
                 'mushroom': new Shape_From_File("assets/mushroom.obj"),
-                'tree': new Shape_From_File("assets/tree.obj"),
                 'cloud': new Shape_From_File("assets/cloud.obj"),
+                'tree': new Tree()
             };
 
             // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -210,18 +210,9 @@ export class Corgo_collision extends Corgo_collision_base {                     
         // Draw mushroom placeholder
         // this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), this.materials.mushroomMtl);
 
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(0, 1, 0, 1)
-        });
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(0, 1, 0, 1)
-        });
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(0, 1, 0, 1)
-        });
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
 
         this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-30, 10, 0).times(Mat4.scale(3, 3, 3)), {
             ...this.materials.plastic,
