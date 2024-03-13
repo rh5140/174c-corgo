@@ -20,6 +20,7 @@ import { Transforms_Sandbox, Transforms_Sandbox_Base } from "./examples/transfor
 const Minimal_Webgl_Demo = defs.Minimal_Webgl_Demo;
 
 import { Corgo_collision } from "./corgo_collision.js";
+import { Rope_bridge } from "./rope_bridge.js";
 
 Object.assign (defs,
     {Minimal_Webgl_Demo},
@@ -37,10 +38,10 @@ Object.assign (defs,
 
 // ******************** SELECT THE DEMO TO DISPLAY:
 
-let scenes = {1: Corgo_collision};
+let scenes = {1: Rope_bridge};
 const scene_selector = (i) => scenes[i];
 
-const main_scene        = Corgo_collision; // default
+const main_scene        = Rope_bridge; // default
 const additional_scenes = [];
 
 export { additional_scenes, defs, main_scene, scene_selector };
