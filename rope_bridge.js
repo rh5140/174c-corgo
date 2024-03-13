@@ -113,7 +113,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
         create_rope_bridge() {
             const ks = 5000;
-            const kd = 10;
+            const kd = 200;
             const length = 1;
 
             // Horrible block of duplicated code
@@ -146,6 +146,9 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             // Create the other rope on the rope bridge
             this.create_rope(particles_in_rope, particle_index, 0, 0, -2);
             this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length)
+            particle_index += particles_in_rope;
+            spring_index += springs_in_rope;
+
             // this.msd.create_particles(9);
             // this.msd.particles[9].top =  true;
             // this.msd.particles[17].top =  true;
@@ -200,42 +203,49 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.msd.springs[22].connect(this.msd.particles[6], this.msd.particles[15], plank_ks, plank_kd, plank_length);
             this.msd.springs[23].connect(this.msd.particles[7], this.msd.particles[16], plank_ks, plank_kd, plank_length);
             this.msd.springs[24].connect(this.msd.particles[8], this.msd.particles[17], plank_ks, plank_kd, plank_length);
-
+            spring_index += 9;
 
             // Add railings
-            // Magic numbers galore (refactor later)
             const railing_height = 2;
-            this.create_rope(9, 18, 0, railing_height, 0);
-            this.create_springs_for_rope(8, 25, 18, ks, kd, length);
+            this.create_rope(particles_in_rope, particle_index, 0, railing_height, 0);
+            console.log("spring index: " + spring_index)
+            this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length);
+            particle_index += particles_in_rope;
+            spring_index += springs_in_rope;
 
-            this.create_rope(9, 27, 0, railing_height, -2);
-            this.create_springs_for_rope(8, 33, 27, ks, kd, length);
+            this.create_rope(particles_in_rope, particle_index, 0, railing_height, -2);
+            this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length);
 
             // Add ropes between railings and the bottom ropes on the bridge
+            // Magic numbers galore (refactor later)
             let railing_ks = 5000;
             let railing_kd = 500;
             let railing_length = 1.75;
-            this.msd.create_springs(9);
-            this.msd.springs[41].connect(this.msd.particles[0], this.msd.particles[18], railing_ks, railing_kd, railing_length);
-            this.msd.springs[42].connect(this.msd.particles[1], this.msd.particles[19], railing_ks, railing_kd, railing_length);
-            this.msd.springs[43].connect(this.msd.particles[2], this.msd.particles[20], railing_ks, railing_kd, railing_length);
-            this.msd.springs[44].connect(this.msd.particles[3], this.msd.particles[21], railing_ks, railing_kd, railing_length);
-            this.msd.springs[45].connect(this.msd.particles[4], this.msd.particles[22], railing_ks, railing_kd, railing_length);
-            this.msd.springs[46].connect(this.msd.particles[5], this.msd.particles[23], railing_ks, railing_kd, railing_length);
-            this.msd.springs[47].connect(this.msd.particles[6], this.msd.particles[24], railing_ks, railing_kd, railing_length);
-            this.msd.springs[48].connect(this.msd.particles[7], this.msd.particles[25], railing_ks, railing_kd, railing_length);
-            this.msd.springs[49].connect(this.msd.particles[8], this.msd.particles[26], railing_ks, railing_kd, railing_length);
-
-            this.msd.create_springs(9);
-            this.msd.springs[50].connect(this.msd.particles[9], this.msd.particles[27], railing_ks, railing_kd, railing_length);
-            this.msd.springs[51].connect(this.msd.particles[10], this.msd.particles[28], railing_ks, railing_kd, railing_length);
-            this.msd.springs[52].connect(this.msd.particles[11], this.msd.particles[29], railing_ks, railing_kd, railing_length);
-            this.msd.springs[53].connect(this.msd.particles[12], this.msd.particles[30], railing_ks, railing_kd, railing_length);
-            this.msd.springs[54].connect(this.msd.particles[13], this.msd.particles[31], railing_ks, railing_kd, railing_length);
-            this.msd.springs[55].connect(this.msd.particles[14], this.msd.particles[32], railing_ks, railing_kd, railing_length);
-            this.msd.springs[56].connect(this.msd.particles[15], this.msd.particles[33], railing_ks, railing_kd, railing_length);
-            this.msd.springs[57].connect(this.msd.particles[16], this.msd.particles[34], railing_ks, railing_kd, railing_length);
-            this.msd.springs[58].connect(this.msd.particles[17], this.msd.particles[35], railing_ks, railing_kd, railing_length);
+            this.msd.create_springs(18);
+            for(let i = 0; i < 18 ; i++) {
+                this.msd.springs[41 + i].connect(this.msd.particles[i], this.msd.particles[18 + i], railing_ks, railing_kd, railing_length);
+            }
+            // this.msd.create_springs(9);
+            // this.msd.springs[41].connect(this.msd.particles[0], this.msd.particles[18], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[42].connect(this.msd.particles[1], this.msd.particles[19], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[43].connect(this.msd.particles[2], this.msd.particles[20], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[44].connect(this.msd.particles[3], this.msd.particles[21], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[45].connect(this.msd.particles[4], this.msd.particles[22], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[46].connect(this.msd.particles[5], this.msd.particles[23], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[47].connect(this.msd.particles[6], this.msd.particles[24], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[48].connect(this.msd.particles[7], this.msd.particles[25], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[49].connect(this.msd.particles[8], this.msd.particles[26], railing_ks, railing_kd, railing_length);
+            //
+            // this.msd.create_springs(9);
+            // this.msd.springs[50].connect(this.msd.particles[9], this.msd.particles[27], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[51].connect(this.msd.particles[10], this.msd.particles[28], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[52].connect(this.msd.particles[11], this.msd.particles[29], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[53].connect(this.msd.particles[12], this.msd.particles[30], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[54].connect(this.msd.particles[13], this.msd.particles[31], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[55].connect(this.msd.particles[14], this.msd.particles[32], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[56].connect(this.msd.particles[15], this.msd.particles[33], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[57].connect(this.msd.particles[16], this.msd.particles[34], railing_ks, railing_kd, railing_length);
+            // this.msd.springs[58].connect(this.msd.particles[17], this.msd.particles[35], railing_ks, railing_kd, railing_length);
 
         }
 
@@ -258,8 +268,8 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 else if(i === 1 || i === 2) {
                     z = -0.1;
                 }
-                else if(i === 3)
-                    x_offset -= 1; // more magic numbers to get the movement i want
+                // else if(i === 3)
+                //     x_offset -= 1; // more magic numbers to get the movement i want
 
 
                 this.msd.particles[start_index + i].set_properties(1, x + i + x_offset, y + y_offset, z + z_offset, vx, vy, vz);
