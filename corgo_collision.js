@@ -1,7 +1,7 @@
 import {defs, tiny} from './examples/common.js';
 import {Shape_From_File} from "./examples/obj-file-demo.js";
-import {Mass_Spring_Damper} from "./particle_system.js";
-import {Curve_Shape, Hermite_Spline} from "./spline.js";
+import {Mass_Spring_Damper} from "./lib/particle_system.js";
+import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
 import {Corgo} from "./assets/corgi/corgi.js";
 import {Flower} from "./assets/flower/flower.js";
 import {Tree} from "./assets/tree/tree.js";

@@ -1,37 +1,25 @@
 import {defs, tiny} from './examples/common.js';
 import {Shape_From_File} from "./examples/obj-file-demo.js";
-import {Mass_Spring_Damper} from "./particle_system.js";
-import {Curve_Shape, Hermite_Spline} from "./spline.js";
-import {Corgo} from "./corgi.js";
-import {Flower} from "./flower.js";
+import {Mass_Spring_Damper} from "./lib/particle_system.js";
+import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
+import {Corgo} from "./assets/corgi/corgi.js";
+import {Tree} from "./assets/tree/tree.js";
 
 // Pull these names into this module's scope for convenience:
 const {vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
 
 export const Rope_bridge_base = defs.Rope_bridge_base =
-    class Rope_bridge_base extends Component {                                          // **My_Demo_Base** is a Scene that can be added to any display canvas.
-        // This particular scene is broken up into two pieces for easier understanding.
-        // The piece here is the base class, which sets up the machinery to draw a simple
-        // scene demonstrating a few concepts.  A subclass of it, Part_one_hermite,
-        // exposes only the display() method, which actually places and draws the shapes,
-        // isolating that code so it can be experimented with on its own.
+    class Rope_bridge_base extends Component {
         init() {
             console.log("init")
 
-            // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
             this.hover = this.swarm = false;
-            // At the beginning of our program, load one of each of these shape
-            // definitions onto the GPU.  NOTE:  Only do this ONCE per shape it
-            // would be redundant to tell it again.  You should just re-use the
-            // one called "box" more than once in display() to draw multiple cubes.
-            // Don't define more than one blueprint for the same thing here.
+
             this.shapes = {
                 'box': new defs.Cube(),
                 'ball': new defs.Subdivision_Sphere(4),
                 'axis': new defs.Axis_Arrows(),
-                'corgi': new Shape_From_File("assets/corgi.obj"),
-                'mushroom': new Shape_From_File("assets/mushroom.obj"),
-                'tree': new Shape_From_File("assets/tree.obj"),
+                'tree': new Tree(),
                 'cloud': new Shape_From_File("assets/cloud.obj"),
             };
 
@@ -56,14 +44,6 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 specularity: 1,
                 color: color(.9, .5, .9, 1)
             }
-            this.materials.mushroomMtl = {
-                shader: tex_phong,
-                ambient: .2,
-                diffusivity: 1,
-                specularity: 0,
-                color: color(1, 1, 1, 1),
-                texture: new Texture("assets/mushroom.png")
-            };
 
             // Spline
             this.spline = new Hermite_Spline();
@@ -79,16 +59,8 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             // Corgo
             this.corgo = new Corgo();
 
-            // Flower
-            this.flower = new Flower();
-
             // Bouncing object
-            const ks = 5000;
-            const kd = 10;
-            const length = 1;
             this.msd = new Mass_Spring_Damper();
-            this.msd.ground_y = 3; // HARDCODING HEIGHT OF MUSHROOM FOR NOW
-            this.msd.spline = this.spline;
 
 
             this.create_rope_bridge();
@@ -208,7 +180,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             // Add railings
             const railing_height = 2;
             this.create_rope(particles_in_rope, particle_index, 0, railing_height, 0);
-            console.log("spring index: " + spring_index)
+            // console.log("spring index: " + spring_index)
             this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length);
             particle_index += particles_in_rope;
             spring_index += springs_in_rope;
@@ -312,26 +284,8 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             // this.msd.springs[15].connect(this.msd.particles[16], this.msd.particles[17], ks, kd, length);
         }
 
-        render_animation(caller) {                                                // display():  Called once per frame of animation.  We'll isolate out
-            // the code that actually draws things into Part_one_hermite, a
-            // subclass of this Scene.  Here, the base class's display only does
-            // some initial setup.
-
-            // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-            if (!caller.controls) {
-                this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
-                caller.controls.add_mouse_controls(caller.canvas);
-
-                // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
-                // matrix follows the usual format for transforms, but with opposite values (cameras exist as
-                // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
-                // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
-                // orthographic() automatically generate valid matrices for one.  The input arguments of
-                // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
-
-                // !!! Camera changed here
-                Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
-            }
+        render_animation(caller) {
+            Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -348,37 +302,11 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
     }
 
 
-export class Rope_bridge extends Rope_bridge_base {                                                    // **Part_one_hermite** is a Scene object that can be added to any display canvas.
-                                                                                                               // This particular scene is broken up into two pieces for easier understanding.
-                                                                                                               // See the other piece, My_Demo_Base, if you need to see the setup code.
-                                                                                                               // The piece here exposes only the display() method, which actually places and draws
-                                                                                                               // the shapes.  We isolate that code so it can be experimented with on its own.
-                                                                                                               // This gives you a very small code sandbox for editing a simple scene, and for
-                                                                                                               // experimenting with matrix transformations.
-    render_animation(caller) {                                                // display():  Called once per frame of animation.  For each shape that you want to
-        // appear onscreen, place a .draw() call for it inside.  Each time, pass in a
-        // different matrix value to control where the shape appears.
-
-        // Variables that are in scope for you to use:
-        // this.shapes.box:   A vertex array object defining a 2x2x2 cube.
-        // this.shapes.ball:  A vertex array object defining a 2x2x2 spherical surface.
-        // this.materials.metal:    Selects a shader and draws with a shiny surface.
-        // this.materials.plastic:  Selects a shader and draws a more matte surface.
-        // this.lights:  A pre-made collection of Light objects.
-        // this.hover:  A boolean variable that changes when the user presses a button.
-        // shared_uniforms:  Information the shader needs for drawing.  Pass to draw().
-        // caller:  Wraps the WebGL rendering context shown onscreen.  Pass to draw().
+export class Rope_bridge extends Rope_bridge_base {
+    render_animation(caller) {
 
         // Call the setup code that we left inside the base class:
         super.render_animation(caller);
-
-        /**********************************
-         Start coding down here!!!!
-         **********************************/
-            // From here on down it's just some example shapes drawn for you -- freely
-            // replace them with your own!  Notice the usage of the Mat4 functions
-            // translation(), scale(), and rotation() to generate matrices, and the
-            // function times(), which generates products of matrices.
 
         const blue = color(0, 0, 1, 1), yellow = color(0.7, 1, 0, 1), red = color(1, 0, 0, 1),
             black = color(0, 0, 0, 1), white = color(1, 1, 1, 1);
@@ -393,31 +321,12 @@ export class Rope_bridge extends Rope_bridge_base {                             
             color: color(2 / 255, 48 / 255, 32 / 255, 1)
         });
 
-        // TODO: you should draw spline here.
-        // this.curve.draw(caller, this.uniforms);
-
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
 
-        // Draw Flower
-        // this.flower.draw(caller, this.uniforms);
-        // this.shapes.ball.draw(caller, this.uniforms, Mat4.translation(...ik_target).times(Mat4.scale(0.5, 0.5, 0.5)), {...this.materials.plastic, color: color(1, 1, 1, 0.2)})
-
-        // Draw mushroom placeholder
-        // this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), this.materials.mushroomMtl);
-
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(0, 1, 0, 1)
-        });
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(0, 1, 0, 1)
-        });
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(0, 1, 0, 1)
-        });
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
 
         this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-30, 10, 0).times(Mat4.scale(3, 3, 3)), {
             ...this.materials.plastic,
@@ -432,11 +341,6 @@ export class Rope_bridge extends Rope_bridge_base {                             
             color: color(1, 1, 1, 1)
         });
 
-        // Draw bouncing thing placeholder
-        let particle_pos = this.msd.particles[0].position;
-        let particle_y = particle_pos[1];
-        // this.shapes.box.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+1,0), { ...this.materials.plastic, color: white } )
-
         // Draw chain (now a rope)
         for (let i = 0; i < this.msd.particles.length; i++) {
             let particle = this.msd.particles[i];
@@ -445,7 +349,7 @@ export class Rope_bridge extends Rope_bridge_base {                             
                 let x = position[0];
                 let y = position[1];
                 let z = position[2];
-                console.log("position: " + position)
+                // console.log("position: " + position)
                 this.shapes.ball.draw( caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.1, 0.1, 0.1)), { ...this.materials.metal, color: blue } );
 
 
@@ -479,10 +383,6 @@ export class Rope_bridge extends Rope_bridge_base {                             
             }
         }
 
-
-
-
-
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
         if (this.running) {
@@ -500,19 +400,6 @@ export class Rope_bridge extends Rope_bridge_base {                             
                 this.t_sim += this.timestep;
             }
         }
-
-        let counter = 0
-        counter = 0
-        while(counter < 10){
-            counter++
-            if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
-            if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
-            if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
-        }
-
-        // this.flower.petalsjoint.rotation = this.flower.petalsjoint.rotation_pref
-        // this.flower.topjoint.rotation = this.flower.topjoint.rotation_pref
-        // this.flower.midjoint.rotation = this.flower.midjoint.rotation_pref
 
         // //crappy corgo animation
         // //legs
@@ -548,11 +435,5 @@ export class Rope_bridge extends Rope_bridge_base {                             
         //     }
         // }
 
-    }
-
-    render_controls() {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
-        // buttons with key bindings for affecting this scene, and live info readouts.
-        this.control_panel.innerHTML += "Part Three: (no buttons)";
-        this.new_line();
     }
 }

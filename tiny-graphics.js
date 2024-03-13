@@ -478,8 +478,8 @@ const Component = tiny.Component =
           this.program_stuff = div.appendChild (document.createElement ("div"));
 
           const defaults = {
-              show_canvas: true, make_controls: true,
-              make_editor: false, make_code_nav: true
+              show_canvas: true, make_controls: false,
+              make_editor: false, make_code_nav: false
           };
 
           const overridden_options = Object.assign (defaults, this.widget_options, options);
