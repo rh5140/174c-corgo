@@ -1,51 +1,176 @@
-import {defs, tiny} from "./examples/common.js";
-import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
+import { Corgo } from "./assets/corgi/corgi.js";
+import { Tree } from "./assets/tree/tree.js";
+import { defs, tiny } from './examples/common.js';
+import { Shape_From_File } from "./examples/obj-file-demo.js";
+import { Mass_Spring_Damper } from "./lib/particle_system.js";
+import { Curve_Shape, Hermite_Spline } from "./lib/spline.js";
+
+// Pull these names into this module's scope for convenience:
 const {vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
 
-export class Part_one_hermite extends Component
-{
-    init()
-    {
-        console.log("init")
+export const Mushroom_scene_base = defs.Mushroom_scene_base =
+    class Mushroom_scene_base extends Component {                                          // **My_Demo_Base** is a Scene that can be added to any display canvas.
+                                                                                            // This particular scene is broken up into two pieces for easier understanding.
+                                                                                            // The piece here is the base class, which sets up the machinery to draw a simple
+                                                                                            // scene demonstrating a few concepts.  A subclass of it, Part_one_hermite,
+                                                                                            // exposes only the display() method, which actually places and draws the shapes,
+                                                                                            // isolating that code so it can be experimented with on its own.
+        init() {
+            console.log("init")
 
-        // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
-        this.hover = this.swarm = false;
-        // At the beginning of our program, load one of each of these shape
-        // definitions onto the GPU.  NOTE:  Only do this ONCE per shape it
-        // would be redundant to tell it again.  You should just re-use the
-        // one called "box" more than once in display() to draw multiple cubes.
-        // Don't define more than one blueprint for the same thing here.
-        this.shapes = { 'box'  : new defs.Cube(),
-            'ball' : new defs.Subdivision_Sphere( 4 ),
-            'axis' : new defs.Axis_Arrows() };
+            // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
+            this.hover = this.swarm = false;
+            // At the beginning of our program, load one of each of these shape
+            // definitions onto the GPU.  NOTE:  Only do this ONCE per shape it
+            // would be redundant to tell it again.  You should just re-use the
+            // one called "box" more than once in display() to draw multiple cubes.
+            // Don't define more than one blueprint for the same thing here.
+            this.shapes = {
+                'box': new defs.Cube(),
+                'ball': new defs.Subdivision_Sphere(4),
+                'axis': new defs.Axis_Arrows(),
+                'mushroom': new Shape_From_File("assets/mushroom.obj"),
+                'cloud': new Shape_From_File("assets/cloud.obj"),
+                'tree': new Tree()
+            };
 
-        this.curve_fn = null;
-        this.sample_cnt = 0;
-        this.curve = new Curve_Shape(null, 100, 0);
+            // *** Materials: ***  A "material" used on individual shapes specifies all fields
+            // that a Shader queries to light/color it properly.  Here we use a Phong shader.
+            // We can now tweak the scalar coefficients from the Phong lighting formulas.
+            // Expected values can be found listed in Phong_Shader::update_GPU().
+            const phong = new defs.Phong_Shader();
+            const tex_phong = new defs.Textured_Phong();
+            this.materials = {};
+            this.materials.plastic = {
+                shader: phong,
+                ambient: .2,
+                diffusivity: 0.8,
+                specularity: .0,
+                color: color(.9, .5, .9, 1)
+            }
+            this.materials.metal = {
+                shader: phong,
+                ambient: .2,
+                diffusivity: 1,
+                specularity: 1,
+                color: color(.9, .5, .9, 1)
+            }
+            this.materials.mushroomMtl = {
+                shader: tex_phong,
+                ambient: .2,
+                diffusivity: 1,
+                specularity: 0,
+                color: color(1, 1, 1, 1),
+                texture: new Texture("assets/mushroom.png")
+            };
 
-        // *** Materials: ***  A "material" used on individual shapes specifies all fields
-        // that a Shader queries to light/color it properly.  Here we use a Phong shader.
-        // We can now tweak the scalar coefficients from the Phong lighting formulas.
-        // Expected values can be found listed in Phong_Shader::update_GPU().
-        const basic = new defs.Basic_Shader();
-        const phong = new defs.Phong_Shader();
-        const tex_phong = new defs.Textured_Phong();
-        this.materials = {};
-        this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) }
-        this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
+            // Spline
+            this.spline = new Hermite_Spline();
+            this.sample_cnt = 1000;
+            this.spline.add_point(-5, -2, -5, -30.0, 0.0, 30.0);
+            this.spline.add_point(-5, -2, 5.0, 30.0, 0.0, 30.0);
+            this.spline.add_point(5.0, -2, 5.0, 30.0, 0.0, -30.0);
+            this.spline.add_point(5.0, -2, -5, -30.0, 0.0, -30.0);
+            this.spline.add_point(-5, -2, -5, -30.0, 0.0, 30.0);
+            const curve_fn = (t, i_0, i_1) => this.spline.get_position(t, i_0, i_1);
+            this.curve = new Curve_Shape(curve_fn, this.sample_cnt, this.spline.size);
 
-        this.ball_location = vec3(1, 1, 1);
-        this.ball_radius = 0.25;
+            // Corgo
+            this.corgo = new Corgo();
 
-        // TODO: you should create a Spline class instance
-        this.spline = new Hermite_Spline();
-        this.sample_cnt = 1000;
+            // Bouncing object
+            const ks = 5000;
+            const kd = 10;
+            const length = 1;
+            this.msd = new Mass_Spring_Damper();
+            this.msd.ground_y = 3; // HARDCODING HEIGHT OF MUSHROOM FOR NOW
+            this.msd.spline = this.spline;
+            this.msd.create_particles(4);
+            this.msd.particles[0].set_properties(1, -1, 5, -1, 0, 5, 0);
+            this.msd.particles[1].set_properties(1, -1, 5, 1, 0, 5, 0);
+            this.msd.particles[2].set_properties(1, 1, 5, 1, 0, 5, 0);
+            this.msd.particles[3].set_properties(1, 1, 5, -1, 0, 5, 0);
+            this.msd.create_springs(4);
+            this.msd.springs[0].connect(this.msd.particles[0], this.msd.particles[1], ks, kd, length);
+            this.msd.springs[1].connect(this.msd.particles[1], this.msd.particles[2], ks, kd, length);
+            this.msd.springs[2].connect(this.msd.particles[2], this.msd.particles[3], ks, kd, length);
+            this.msd.springs[3].connect(this.msd.particles[3], this.msd.particles[0], ks, kd, length);
 
+            this.timestep = 1 / 1000;
+            this.t_sim = 0;
+            this.running = true;
+
+
+            //corgo animation
+            this.thigh_angle = 0;
+            this.thigh_angle_change_rate = 0.05;
+            this.thigh_max_angle = Math.PI / 4;
+            this.thigh_forward = true;
+
+
+            this.tail_angle = 0;
+            this.tail_forward = true;
+        }
+
+        render_animation(caller) {                                                // display():  Called once per frame of animation.  We'll isolate out
+            // the code that actually draws things into Part_one_hermite, a
+            // subclass of this Scene.  Here, the base class's display only does
+            // some initial setup.
+
+            // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
+            if (!caller.controls) {
+                this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
+                caller.controls.add_mouse_controls(caller.canvas);
+
+                // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
+                // matrix follows the usual format for transforms, but with opposite values (cameras exist as
+                // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
+                // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
+                // orthographic() automatically generate valid matrices for one.  The input arguments of
+                // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
+
+                // !!! Camera changed here
+                Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
+            }
+            this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
+
+            // *** Lights: *** Values of vector or point lights.  They'll be consulted by
+            // the shader when coloring shapes.  See Light's class definition for inputs.
+            const t = this.t = this.uniforms.animation_time / 1000;
+            const angle = Math.sin(t);
+
+            // const light_position = Mat4.rotation( angle,   1,0,0 ).times( vec4( 0,-1,1,0 ) ); !!!
+            // !!! Light changed here
+            const light_position = vec4(20 * Math.cos(angle), 20, 20 * Math.sin(angle), 1.0);
+            this.uniforms.lights = [defs.Phong_Shader.light_source(light_position, color(1, 1, 1, 1), 1000000)];
+
+        }
     }
 
-    render_animation( caller )
-    {
-        super.render_animation( caller );
+
+export class Mushroom_scene extends Mushroom_scene_base {                                                    // **Part_one_hermite** is a Scene object that can be added to any display canvas.
+                                                                                                               // This particular scene is broken up into two pieces for easier understanding.
+                                                                                                               // See the other piece, My_Demo_Base, if you need to see the setup code.
+                                                                                                               // The piece here exposes only the display() method, which actually places and draws
+                                                                                                               // the shapes.  We isolate that code so it can be experimented with on its own.
+                                                                                                               // This gives you a very small code sandbox for editing a simple scene, and for
+                                                                                                               // experimenting with matrix transformations.
+    render_animation(caller) {                                                // display():  Called once per frame of animation.  For each shape that you want to
+        // appear onscreen, place a .draw() call for it inside.  Each time, pass in a
+        // different matrix value to control where the shape appears.
+
+        // Variables that are in scope for you to use:
+        // this.shapes.box:   A vertex array object defining a 2x2x2 cube.
+        // this.shapes.ball:  A vertex array object defining a 2x2x2 spherical surface.
+        // this.materials.metal:    Selects a shader and draws with a shiny surface.
+        // this.materials.plastic:  Selects a shader and draws a more matte surface.
+        // this.lights:  A pre-made collection of Light objects.
+        // this.hover:  A boolean variable that changes when the user presses a button.
+        // shared_uniforms:  Information the shader needs for drawing.  Pass to draw().
+        // caller:  Wraps the WebGL rendering context shown onscreen.  Pass to draw().
+
+        // Call the setup code that we left inside the base class:
+        super.render_animation(caller);
 
         /**********************************
          Start coding down here!!!!
@@ -55,170 +180,107 @@ export class Part_one_hermite extends Component
             // translation(), scale(), and rotation() to generate matrices, and the
             // function times(), which generates products of matrices.
 
-        const blue = color( 0,0,1,1 ), yellow = color( 1,0.7,0,1 );
+        const blue = color(0, 0, 1, 1), yellow = color(0.7, 1, 0, 1), red = color(1, 0, 0, 1),
+            black = color(0, 0, 0, 1), white = color(1, 1, 1, 1);
 
-        const t = this.t = this.uniforms.animation_time/1000;
-
+        const t = this.t = this.uniforms.animation_time / 1000;
 
         // !!! Draw ground
-        let floor_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(10, 0.01, 10));
-        this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
-
-        // !!! Draw curve
-
-        // // Sad, this is not working
-        // const gl = caller.context;
-        // gl.lineWidth(10);
-
-        // add some fluctuation
-        // if (this.curve_fn && this.sample_cnt === this.curve.sample_count) {
-        //   this.curve.update(caller, this.uniforms,
-        //       (s) => this.curve_fn(s).plus(vec3(Math.cos(this.t * s), Math.sin(this.t), 0)) );
-        // }
+        // TRANSLATED DOWN 3
+        let floor_transform = Mat4.translation(0, -3, 0).times(Mat4.scale(100, 0.01, 100));
+        this.shapes.box.draw(caller, this.uniforms, floor_transform, {
+            ...this.materials.plastic,
+            color: color(2 / 255, 48 / 255, 32 / 255, 1)
+        });
 
         // TODO: you should draw spline here.
-        this.curve.draw(caller, this.uniforms);
+        // this.curve.draw(caller, this.uniforms);
+
+        // Draw Corgo
+        this.corgo.draw(caller, this.uniforms);
+
+        // Draw mushroom
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), this.materials.mushroomMtl);
+
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
+
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-30, 10, 0).times(Mat4.scale(3, 3, 3)), {
+            ...this.materials.plastic,
+            color: color(1, 1, 1, 1)
+        });
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(0, 10, -30).times(Mat4.scale(3, 3, 3)), {
+            ...this.materials.plastic,
+            color: color(1, 1, 1, 1)
+        });
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-25, 10, -25).times(Mat4.scale(3, 3, 3)), {
+            ...this.materials.plastic,
+            color: color(1, 1, 1, 1)
+        });
+
+        // Draw bouncing thing placeholder
+        let particle_pos = this.msd.particles[0].position;
+        let particle_y = particle_pos[1];
+        this.shapes.box.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+1,0), { ...this.materials.plastic, color: white } )
+
+        let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
+        // dt *= this.sim_speed;
+        if (this.running) {
+            const t_next = this.t_sim + dt;
+            while (this.t_sim < t_next) {
+                let num_points = this.spline.size - 1;
+                let idx = Math.floor(this.t_sim % num_points);
+                let iter = this.t_sim % 1.0;
+                this.corgo.position = this.spline.get_position(iter, idx, idx + 1);
+                this.corgo.velocity = this.spline.get_velocity(iter, idx, idx + 1);
+                this.corgo.acceleration = this.spline.get_velocity(iter, idx, idx + 1);
+
+                // normal update
+                this.msd.update(this.timestep)
+                this.t_sim += this.timestep;
+            }
+        }
+
+        //crappy corgo animation
+        //legs
+        if (this.thigh_forward) {
+            this.thigh_angle += this.thigh_angle_change_rate;
+            this.corgo.thigh.rotation.z += this.thigh_angle_change_rate;
+            this.corgo.shoulder.rotation.z -= this.thigh_angle_change_rate;
+            if (this.thigh_angle >= this.thigh_max_angle) {
+                this.thigh_forward = false;
+            }
+        } else {
+            this.thigh_angle -= this.thigh_angle_change_rate;
+            this.corgo.thigh.rotation.z -= this.thigh_angle_change_rate;
+            this.corgo.shoulder.rotation.z += this.thigh_angle_change_rate;
+            if (this.thigh_angle <= -this.thigh_max_angle) {
+                this.thigh_forward = true;
+            }
+        }
+        //console.log(this.thigh_angle);
+
+        let wag_rate = 0.05
+        if (this.tail_forward) {
+            this.tail_angle += wag_rate;
+            this.corgo.tail_muscle.rotation.x += wag_rate;
+            if (this.tail_angle >= Math.PI / 6) {
+                this.tail_forward = false;
+            }
+        } else {
+            this.tail_angle -= wag_rate;
+            this.corgo.tail_muscle.rotation.x -= wag_rate;
+            if (this.tail_angle <= -Math.PI / 6) {
+                this.tail_forward = true;
+            }
+        }
+
     }
 
-    render_controls()
-    {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
+    render_controls() {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
         // buttons with key bindings for affecting this scene, and live info readouts.
-        this.control_panel.innerHTML += "Part One:";
+        this.control_panel.innerHTML += "Part Three: (no buttons)";
         this.new_line();
-        this.key_triggered_button( "Parse Commands", [], this.parse_commands );
-        this.new_line();
-        this.key_triggered_button( "Draw", [], this.update_scene );
-        this.new_line();
-        this.key_triggered_button( "Load", [], this.load_spline );
-        this.new_line();
-        this.key_triggered_button( "Export", [], this.export_spline );
-        this.new_line();
-
-        /* Some code for your reference
-        this.key_triggered_button( "Copy input", [ "c" ], function() {
-          let text = document.getElementById("input").value;
-          console.log(text);
-          document.getElementById("output").value = text;
-        } );
-        this.new_line();
-        this.key_triggered_button( "Relocate", [ "r" ], function() {
-          let text = document.getElementById("input").value;
-          const words = text.split(' ');
-          if (words.length >= 3) {
-            const x = parseFloat(words[0]);
-            const y = parseFloat(words[1]);
-            const z = parseFloat(words[2]);
-            this.ball_location = vec3(x, y, z)
-            document.getElementById("output").value = "success";
-          }
-          else {
-            document.getElementById("output").value = "invalid input";
-          }
-        } );
-         */
-    }
-
-    parse_commands() {
-        // supports:
-        //    add point x y z tx ty tz
-        //    set tangent idx x y z
-        //    set point idx x y z
-        //    get_arc_length
-        let text = document.getElementById("input").value;
-        const lines = text.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-            const words = lines[i].split(' ');
-
-            if (words.length > 8) {
-                document.getElementById("output").value = "invalid input (Part 1)";
-            }
-            // add point x y z tx ty tz
-            else if (words.length == 8) {
-                // check if if it's an add point command
-                if (words[0] == "add" && words[1] == "point") {
-                    const x = parseFloat(words[2]);
-                    const y = parseFloat(words[3]);
-                    const z = parseFloat(words[4]);
-                    const tx = parseFloat(words[5]);
-                    const ty = parseFloat(words[6]);
-                    const tz = parseFloat(words[7]);
-                    this.spline.add_point(x,y,z,tx,ty,tz);
-
-                    document.getElementById("output").value = "add point";
-                }
-                else {
-                    document.getElementById("output").value = "invalid input (Part 1)";
-                }
-            }
-            else if (words.length == 6) {
-                if (words[0] == "set") {
-                    const idx = parseFloat(words[2]);
-                    // check idx is within length
-                    if (idx < 0 || idx >= this.spline.size) {
-                        document.getElementById("output").value = "invalid input (Part 1): control point does not exist";
-                    }
-
-                    const x = parseFloat(words[3]);
-                    const y = parseFloat(words[4]);
-                    const z = parseFloat(words[5]);
-                    if (words[1] == "tangent") {
-                        this.spline.tangents[idx] = vec3(x,y,z);
-                    }
-                    else if (words[1] == "point") {
-                        this.spline.points[idx] = vec3(x,y,z);
-                    }
-                }
-                else {
-                    document.getElementById("output").value = "invalid input (Part 1)";
-                }
-            }
-            else if (words == "get_arc_length") {
-                const arc_length = this.spline.get_arc_length();
-                document.getElementById("output").value = arc_length;
-            }
-            else {
-                document.getElementById("output").value = "invalid input (Part 1)";
-            }
-        }
-    }
-
-    update_scene() { // callback for Draw button
-        const curve_fn = (t, i_0, i_1) => this.spline.get_position(t, i_0, i_1);
-        this.curve = new Curve_Shape(curve_fn, this.sample_cnt, this.spline.size);
-    }
-
-    load_spline() {
-        document.getElementById("output").value = "load_spline";
-        let text = document.getElementById("input").value;
-        const lines = text.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-            const words = lines[i].split(' ');
-            const x = parseFloat(words[0]);
-            const y = parseFloat(words[1]);
-            const z = parseFloat(words[2]);
-            const tx = parseFloat(words[3]);
-            const ty = parseFloat(words[4]);
-            const tz = parseFloat(words[5]);
-            this.spline.add_point(x,y,z,tx,ty,tz);
-        }
-    }
-
-    export_spline() {
-        let result = "";
-        for (let i = 0; i < this.spline.size; i++) {
-            let c = this.spline.points[i];
-            let t = this.spline.tangents[i];
-
-            let c_x = c[0];
-            let c_y = c[1];
-            let c_z = c[2];
-
-            let t_x = t[0];
-            let t_y = t[1];
-            let t_z = t[2];
-
-            result = result.concat("\n", c_x, " ", c_y, " ", c_z, " ", t_x, " ", t_y, " ", t_z);
-        }
-        document.getElementById("output").value = result;
     }
 }
