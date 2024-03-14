@@ -4,6 +4,7 @@ import { defs, tiny } from './examples/common.js';
 import { Shape_From_File } from "./examples/obj-file-demo.js";
 import { Mass_Spring_Damper } from "./lib/particle_system.js";
 import { Curve_Shape, Hermite_Spline } from "./lib/spline.js";
+import {Frog} from "./assets/frog/frog.js";
 
 // Pull these names into this module's scope for convenience:
 const {vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
@@ -31,7 +32,8 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
                 'axis': new defs.Axis_Arrows(),
                 'mushroom': new Shape_From_File("assets/mushroom.obj"),
                 'cloud': new Shape_From_File("assets/cloud.obj"),
-                'tree': new Tree()
+                'tree': new Tree(),
+                'frog': new Frog()
             };
 
             // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -222,7 +224,7 @@ export class Mushroom_scene extends Mushroom_scene_base {                       
         // Draw bouncing thing placeholder
         let particle_pos = this.msd.particles[0].position;
         let particle_y = particle_pos[1];
-        this.shapes.box.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+1,0), { ...this.materials.plastic, color: white } )
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+1,0))
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
