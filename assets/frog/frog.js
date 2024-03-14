@@ -24,8 +24,8 @@ class Frog {
 
     draw(webgl_manager, uniforms, transform) {
         this.shapes.body.draw(webgl_manager, uniforms, transform, this.materials.body);
-        this.shapes.back_legs.draw(webgl_manager, uniforms, transform.times(Mat4.translation(-1.1, -0.6, 0).times(Mat4.scale(0.7, 0.7, 0.7))), this.materials.back_legs);
-        this.shapes.eyes.draw(webgl_manager, uniforms, transform.times(Mat4.translation(.5, .6, 0).times(Mat4.scale(0.3, 0.3, 0.3))), this.materials.eyes);
-        this.shapes.front_legs.draw(webgl_manager, uniforms, transform.times(Mat4.translation(.5, -0.5, 0).times(Mat4.scale(0.7, 0.7, 0.7))), this.materials.front_legs);
+        this.shapes.back_legs.draw(webgl_manager, uniforms, transform.times(Mat4.translation(-1.2, -0.6, 0).times(Mat4.scale(0.6, 0.6, 0.6))), this.materials.back_legs);
+        this.shapes.eyes.draw(webgl_manager, uniforms, transform.times(Mat4.translation(.65, .6, 0).times(Mat4.scale(0.35, 0.35, 0.35))), this.materials.eyes);
+        this.shapes.front_legs.draw(webgl_manager, uniforms, transform.times(Mat4.translation(.6, -0.5, 0).times(Mat4.scale(0.6, 0.6, 0.6))), this.materials.front_legs);
     }
 }
