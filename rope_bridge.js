@@ -365,26 +365,29 @@ export class Rope_bridge extends Rope_bridge_base {
 
         //reset the spline to the new locations of the planks....
         // not working yet
+        // Reset all points in the spline :(
         this.spline.points = [];
         this.spline.tangents = [];
         this.spline.size = 0;
         for(let i = 0; i < plank_locations.length; i++) {
             console.log(plank_locations[i])
-            this.spline.add_point(plank_locations[i][0], plank_locations[i][1], plank_locations[i][2], 1, 0, 0);
+            this.spline.add_point(plank_locations[i][0], plank_locations[i][1] + 1.5, plank_locations[i][2], 1, 0, 0);
         }
         // Draw spline for debugging
-        const curve_fn = (t, i_0, i_1) => this.spline.get_position(t, i_0, i_1);
-        this.curve = new Curve_Shape(curve_fn, this.sample_cnt, this.spline.size);
-        this.curve.draw(caller, this.uniforms);
+        // Don't do this it clogs up the GPU
+        // const curve_fn = (t, i_0, i_1) => this.spline.get_position(t, i_0, i_1);
+        // this.curve = new Curve_Shape(curve_fn, this.sample_cnt, this.spline.size);
+        // this.curve.draw(caller, this.uniforms);
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
+        const corgo_speedup = 1.0; // To make corgo run faster
         if (this.running) {
             const t_next = this.t_sim + dt;
             while (this.t_sim < t_next) {
                 let num_points = this.spline.size - 1;
                 let idx = Math.floor(this.t_sim % num_points);
-                let iter = this.t_sim % 1.0;
+                let iter = (this.t_sim * corgo_speedup) % 1.0;
                 this.corgo.position = this.spline.get_position(iter, idx, idx + 1);
                 this.corgo.velocity = this.spline.get_velocity(iter, idx, idx + 1);
                 this.corgo.acceleration = this.spline.get_velocity(iter, idx, idx + 1);
