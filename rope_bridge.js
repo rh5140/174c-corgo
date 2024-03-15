@@ -286,26 +286,26 @@ export class Rope_bridge extends Rope_bridge_base {
             color: color(1, 1, 1, 1)
         });
 
-        // Draw "cliffs"
-        // Try to downsample texture
-        let texture2_coord = this.shapes.mountain.arrays.texture_coord;
-        for (let i = 0; i < texture2_coord.length; i++) {
-            let new_coord = vec(texture2_coord[i][0] * 2, texture2_coord[i][1] * 2); // Zoom out on each axis (so the texture appears multiple times on each face)
-            this.shapes.mountain.arrays.texture_coord[i] = new_coord;
-        }
-        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(-2, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
-
-
-        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(15, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
-
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-3, 3, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-1, 0, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 1, 1, 1)), this.materials.rock);
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(6, 0, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(3, -1, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
-
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 2, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 0, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(17, 1, 0).times(Mat4.scale(2, 2, 2)), this.materials.rock);
+        // // Draw "cliffs"
+        // // Try to downsample texture
+        // let texture2_coord = this.shapes.mountain.arrays.texture_coord;
+        // for (let i = 0; i < texture2_coord.length; i++) {
+        //     let new_coord = vec(texture2_coord[i][0] * 2, texture2_coord[i][1] * 2); // Zoom out on each axis (so the texture appears multiple times on each face)
+        //     this.shapes.mountain.arrays.texture_coord[i] = new_coord;
+        // }
+        // this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(-2, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
+        //
+        //
+        // this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(15, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
+        //
+        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-3, 3, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-1, 0, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 1, 1, 1)), this.materials.rock);
+        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(6, 0, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(3, -1, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+        //
+        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 2, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
+        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 0, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
+        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(17, 1, 0).times(Mat4.scale(2, 2, 2)), this.materials.rock);
 
 
         // Draw chain (now a rope)
@@ -319,12 +319,11 @@ export class Rope_bridge extends Rope_bridge_base {
                 // console.log("position: " + position)
                 this.shapes.ball.draw( caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.07, 0.07, 0.07)), { ...this.materials.rope, color: tan } );
 
-
-                // Draw planks
-                // this.shapes.box.draw(caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.3, 0.01, 1)), { ...this.materials.plastic, color: red });
             }
         }
 
+
+        let plank_locations = []; // For the new spline
         for (const s of this.msd.springs) {
             if (s.set) {
                 const p1 = s.particle_0.position;
@@ -351,6 +350,8 @@ export class Rope_bridge extends Rope_bridge_base {
                     this.shapes.box.draw(caller, this.uniforms, model_transform, this.materials.rope);
                 }
                 else {
+                    plank_locations.push(center); // For the new spline
+
                     let plank_transform = Mat4.scale(0.55, 0.8, 1);
                     plank_transform.pre_multiply(Mat4.rotation(theta, w[0], w[1], w[2]));
                     plank_transform.pre_multiply(Mat4.rotation(Math.PI / 2, 1, 0, 0));
@@ -361,6 +362,20 @@ export class Rope_bridge extends Rope_bridge_base {
 
             }
         }
+
+        //reset the spline to the new locations of the planks....
+        // not working yet
+        this.spline.points = [];
+        this.spline.tangents = [];
+        this.spline.size = 0;
+        for(let i = 0; i < plank_locations.length; i++) {
+            console.log(plank_locations[i])
+            this.spline.add_point(plank_locations[i][0], plank_locations[i][1], plank_locations[i][2], 1, 0, 0);
+        }
+        // Draw spline for debugging
+        const curve_fn = (t, i_0, i_1) => this.spline.get_position(t, i_0, i_1);
+        this.curve = new Curve_Shape(curve_fn, this.sample_cnt, this.spline.size);
+        this.curve.draw(caller, this.uniforms);
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
