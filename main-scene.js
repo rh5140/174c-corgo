@@ -22,7 +22,7 @@ Object.assign (defs,
 let scenes = {1: Rope_bridge};
 const scene_selector = (i) => scenes[i];
 
-const main_scene        = Rope_bridge; // default
+const main_scene        = Corgo_collision; // default
 const additional_scenes = [];
 
 export { additional_scenes, defs, main_scene, scene_selector };
