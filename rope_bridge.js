@@ -381,13 +381,14 @@ export class Rope_bridge extends Rope_bridge_base {
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
-        const corgo_speedup = 1.0; // To make corgo run faster
+        const corgo_speedup = 4.0; // To make corgo run faster
         if (this.running) {
             const t_next = this.t_sim + dt;
             while (this.t_sim < t_next) {
                 let num_points = this.spline.size - 1;
-                let idx = Math.floor(this.t_sim % num_points);
+                let idx = Math.floor((this.t_sim * corgo_speedup) % num_points);
                 let iter = (this.t_sim * corgo_speedup) % 1.0;
+                // console.log("t_sim: " + this.t_sim + "iter: " + iter);
                 this.corgo.position = this.spline.get_position(iter, idx, idx + 1);
                 this.corgo.velocity = this.spline.get_velocity(iter, idx, idx + 1);
                 this.corgo.acceleration = this.spline.get_velocity(iter, idx, idx + 1);
