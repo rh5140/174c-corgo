@@ -21,6 +21,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 'axis': new defs.Axis_Arrows(),
                 'tree': new Tree(),
                 'cloud': new Shape_From_File("assets/cloud.obj"),
+                'plank': new Shape_From_File("assets/plank.obj"),
             };
 
             // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -43,6 +44,21 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 diffusivity: 1,
                 specularity: 1,
                 color: color(.9, .5, .9, 1)
+            }
+            this.materials.wood = {
+                shader: tex_phong,
+                ambient: 0.8,
+                diffusivity: 1.0,
+                specularity: 0.0,
+                texture: new Texture("assets/wood.jpg")
+            }
+            this.materials.rope = {
+                shader: tex_phong,
+                ambient: 1.0,
+                diffusivity: 1.0,
+                specularity: 0.0,
+                color: color(.9, .9, .9, 1.0),
+                texture: new Texture("assets/rope.jpg")
             }
 
             // Spline
@@ -164,17 +180,21 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             // Springs for planks maybe?
             let plank_ks = 5000;
             let plank_kd = 500;
-            let plank_length = 2
+            let plank_length = 2;
             this.msd.create_springs(9);
-            this.msd.springs[16].connect(this.msd.particles[0], this.msd.particles[9], plank_ks, plank_kd, plank_length);
-            this.msd.springs[17].connect(this.msd.particles[1], this.msd.particles[10], plank_ks, plank_kd, plank_length);
-            this.msd.springs[18].connect(this.msd.particles[2], this.msd.particles[11], plank_ks, plank_kd, plank_length);
-            this.msd.springs[19].connect(this.msd.particles[3], this.msd.particles[12], plank_ks, plank_kd, plank_length);
-            this.msd.springs[20].connect(this.msd.particles[4], this.msd.particles[13], plank_ks, plank_kd, plank_length);
-            this.msd.springs[21].connect(this.msd.particles[5], this.msd.particles[14], plank_ks, plank_kd, plank_length);
-            this.msd.springs[22].connect(this.msd.particles[6], this.msd.particles[15], plank_ks, plank_kd, plank_length);
-            this.msd.springs[23].connect(this.msd.particles[7], this.msd.particles[16], plank_ks, plank_kd, plank_length);
-            this.msd.springs[24].connect(this.msd.particles[8], this.msd.particles[17], plank_ks, plank_kd, plank_length);
+            for(let i = 0 ; i < 9; i++) {
+                this.msd.springs[16 + i].connect(this.msd.particles[0 + i], this.msd.particles[9 + i], plank_ks, plank_kd, plank_length);
+                this.msd.springs[16 + i].is_plank = true;
+            }
+            // this.msd.springs[16].connect(this.msd.particles[0], this.msd.particles[9], plank_ks, plank_kd, plank_length);
+            // this.msd.springs[17].connect(this.msd.particles[1], this.msd.particles[10], plank_ks, plank_kd, plank_length);
+            // this.msd.springs[18].connect(this.msd.particles[2], this.msd.particles[11], plank_ks, plank_kd, plank_length);
+            // this.msd.springs[19].connect(this.msd.particles[3], this.msd.particles[12], plank_ks, plank_kd, plank_length);
+            // this.msd.springs[20].connect(this.msd.particles[4], this.msd.particles[13], plank_ks, plank_kd, plank_length);
+            // this.msd.springs[21].connect(this.msd.particles[5], this.msd.particles[14], plank_ks, plank_kd, plank_length);
+            // this.msd.springs[22].connect(this.msd.particles[6], this.msd.particles[15], plank_ks, plank_kd, plank_length);
+            // this.msd.springs[23].connect(this.msd.particles[7], this.msd.particles[16], plank_ks, plank_kd, plank_length);
+            // this.msd.springs[24].connect(this.msd.particles[8], this.msd.particles[17], plank_ks, plank_kd, plank_length);
             spring_index += 9;
 
             // Add railings
@@ -309,7 +329,7 @@ export class Rope_bridge extends Rope_bridge_base {
         super.render_animation(caller);
 
         const blue = color(0, 0, 1, 1), yellow = color(0.7, 1, 0, 1), red = color(1, 0, 0, 1),
-            black = color(0, 0, 0, 1), white = color(1, 1, 1, 1);
+            black = color(0, 0, 0, 1), white = color(1, 1, 1, 1), tan = color(.9, .9, .9, 1.0);
 
         const t = this.t = this.uniforms.animation_time / 1000;
 
@@ -350,7 +370,7 @@ export class Rope_bridge extends Rope_bridge_base {
                 let y = position[1];
                 let z = position[2];
                 // console.log("position: " + position)
-                this.shapes.ball.draw( caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.1, 0.1, 0.1)), { ...this.materials.metal, color: blue } );
+                this.shapes.ball.draw( caller, this.uniforms, Mat4.translation(x,y,z).times(Mat4.scale(0.07, 0.07, 0.07)), { ...this.materials.rope, color: tan } );
 
 
                 // Draw planks
@@ -379,7 +399,19 @@ export class Rope_bridge extends Rope_bridge_base {
                 const theta = Math.acos(v.dot(p));
                 model_transform.pre_multiply(Mat4.rotation(theta, w[0], w[1], w[2]));
                 model_transform.pre_multiply(Mat4.translation(center[0], center[1], center[2]));
-                this.shapes.box.draw(caller, this.uniforms, model_transform, { ...this.materials.plastic, color: red });
+
+                if(!s.is_plank) {
+                    this.shapes.box.draw(caller, this.uniforms, model_transform, this.materials.rope);
+                }
+                else {
+                    let plank_transform = Mat4.scale(0.55, 0.8, 1);
+                    plank_transform.pre_multiply(Mat4.rotation(theta, w[0], w[1], w[2]));
+                    plank_transform.pre_multiply(Mat4.rotation(Math.PI / 2, 1, 0, 0));
+                    plank_transform.pre_multiply(Mat4.rotation(Math.PI / 2, 0, 1, 0));
+                    plank_transform.pre_multiply(Mat4.translation(center[0], center[1], center[2]));
+                    this.shapes.plank.draw(caller, this.uniforms, plank_transform, this.materials.wood);
+                }
+
             }
         }
 
