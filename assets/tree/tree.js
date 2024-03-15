@@ -23,3 +23,4 @@ class Tree {
         this.shapes.leaves.draw(webgl_manager, uniforms, Mat4.translation(0, 3, 0).times(transform), this.materials.leaves);
     }
 }
+

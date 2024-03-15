@@ -63,6 +63,14 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 color: color(.9, .9, .9, 1.0),
                 texture: new Texture("assets/rope.jpg")
             }
+            this.materials.mountainside = {
+                shader: tex_phong,
+                ambient: 0.5,
+                diffusivity: 1.0,
+                specularity: 0.0,
+                color: color(.7, 1.0, .5, 1.0),
+                texture: new Texture("assets/rock.jpg", "LINEAR_MIPMAP_LINEAR")
+            }
             this.materials.rock = {
                 shader: tex_phong,
                 ambient: 0.5,
@@ -117,10 +125,12 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             const length = 1;
 
             // Horrible block of duplicated code
-            let particles_in_rope = 9;
+            const particles_in_rope = 20; // How many particles are in a single rope
+            const springs_in_rope = particles_in_rope - 1; // How many springs are in a single rope
             let particle_index = 0;
             let spring_index = 0;
-            let springs_in_rope = particles_in_rope - 1;
+
+            // Create one rope of the floor of the rope bridge
             this.create_rope(particles_in_rope, particle_index, 0, 0, 0);
 
             this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length);
@@ -128,86 +138,23 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             spring_index += springs_in_rope;
 
 
-            // Creating one rope of the rope bridge
-            // this.msd.create_particles(9);
-            // this.msd.particles[0].top =  true;
-            // this.msd.particles[8].top =  true;
-            //
-            // this.msd.particles[0].set_properties(1, -1, 5, -1, 0, 0, 0);
-            // this.msd.particles[1].set_properties(1, 0, 5, -0.1, 0, 5, 0);
-            // this.msd.particles[2].set_properties(1, 1, 5, -0.1, 0, 5, 0);
-            // this.msd.particles[3].set_properties(1, 1, 5, -1, 0, 5, 0);
-            // this.msd.particles[4].set_properties(1, 2, 5, -1, 0, 5, 0);
-            // this.msd.particles[5].set_properties(1, 3, 5, -1, 0, 5, 0);
-            // this.msd.particles[6].set_properties(1, 4, 5, -1, 0, 5, 0);
-            // this.msd.particles[7].set_properties(1, 5, 5, -1, 0, 5, 0);
-            // this.msd.particles[8].set_properties(1, 6, 5, -1, 0, 5, 0);
-
-            // Create the other rope on the rope bridge
+            // Create the other rope on the floor of the rope bridge
             this.create_rope(particles_in_rope, particle_index, 0, 0, -2);
             this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length)
             particle_index += particles_in_rope;
             spring_index += springs_in_rope;
 
-            // this.msd.create_particles(9);
-            // this.msd.particles[9].top =  true;
-            // this.msd.particles[17].top =  true;
-            // let x_offset = 0;
-            // let y_offset = 0;
-            // let z_offset = 2;
-            // this.msd.particles[9].set_properties(1, -1 - x_offset, 5 - y_offset, -1 - z_offset, 0, 0, 0);
-            // this.msd.particles[10].set_properties(1, 0 - x_offset, 5 - y_offset, -0.1 - z_offset, 0, 5, 0);
-            // this.msd.particles[11].set_properties(1, 1 - x_offset, 5 - y_offset, -0.1 - z_offset, 0, 5, 0);
-            // this.msd.particles[12].set_properties(1, 1 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
-            // this.msd.particles[13].set_properties(1, 2 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
-            // this.msd.particles[14].set_properties(1, 3 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
-            // this.msd.particles[15].set_properties(1, 4 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
-            // this.msd.particles[16].set_properties(1, 5 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
-            // this.msd.particles[17].set_properties(1, 6 - x_offset, 5 - y_offset, -1 - z_offset, 0, 5, 0);
 
-
-            // Springs for one side of the rope bridge
-            // this.msd.create_springs(8);
-            // this.msd.springs[0].connect(this.msd.particles[0], this.msd.particles[1], ks, kd, length);
-            // this.msd.springs[1].connect(this.msd.particles[1], this.msd.particles[2], ks, kd, length);
-            // this.msd.springs[2].connect(this.msd.particles[2], this.msd.particles[3], ks, kd, length);
-            // this.msd.springs[3].connect(this.msd.particles[3], this.msd.particles[4], ks, kd, length);
-            // this.msd.springs[4].connect(this.msd.particles[4], this.msd.particles[5], ks, kd, length);
-            // this.msd.springs[5].connect(this.msd.particles[5], this.msd.particles[6], ks, kd, length);
-            // this.msd.springs[6].connect(this.msd.particles[6], this.msd.particles[7], ks, kd, length);
-            // this.msd.springs[7].connect(this.msd.particles[7], this.msd.particles[8], ks, kd, length);
-            // // this.msd.springs[8].connect(this.msd.particles[8], this.msd.particles[0], ks, kd, length);
-
-            // Springs for the other side of the rope bridge
-            // this.msd.create_springs(8);
-            // this.msd.springs[8].connect(this.msd.particles[9], this.msd.particles[10], ks, kd, length);
-            // this.msd.springs[9].connect(this.msd.particles[10], this.msd.particles[11], ks, kd, length);
-            // this.msd.springs[10].connect(this.msd.particles[11], this.msd.particles[12], ks, kd, length);
-            // this.msd.springs[11].connect(this.msd.particles[12], this.msd.particles[13], ks, kd, length);
-            // this.msd.springs[12].connect(this.msd.particles[13], this.msd.particles[14], ks, kd, length);
-            // this.msd.springs[13].connect(this.msd.particles[14], this.msd.particles[15], ks, kd, length);
-            // this.msd.springs[14].connect(this.msd.particles[15], this.msd.particles[16], ks, kd, length);
-            // this.msd.springs[15].connect(this.msd.particles[16], this.msd.particles[17], ks, kd, length);
-
-            // Springs for planks maybe?
-            let plank_ks = 5000;
-            let plank_kd = 500;
-            let plank_length = 2;
-            this.msd.create_springs(9);
-            for(let i = 0 ; i < 9; i++) {
-                this.msd.springs[16 + i].connect(this.msd.particles[0 + i], this.msd.particles[9 + i], plank_ks, plank_kd, plank_length);
-                this.msd.springs[16 + i].is_plank = true;
+            // Springs for planks
+            const plank_ks = 5000;
+            const plank_kd = 500;
+            const plank_length = 2;
+            this.msd.create_springs(particles_in_rope); // There are as many planks as particles in a single rope
+            for(let i = 0 ; i < particles_in_rope; i++) {
+                this.msd.springs[spring_index + i].connect(this.msd.particles[0 + i], this.msd.particles[particles_in_rope + i], plank_ks, plank_kd, plank_length);
+                this.msd.springs[spring_index + i].is_plank = true;
             }
-            // this.msd.springs[16].connect(this.msd.particles[0], this.msd.particles[9], plank_ks, plank_kd, plank_length);
-            // this.msd.springs[17].connect(this.msd.particles[1], this.msd.particles[10], plank_ks, plank_kd, plank_length);
-            // this.msd.springs[18].connect(this.msd.particles[2], this.msd.particles[11], plank_ks, plank_kd, plank_length);
-            // this.msd.springs[19].connect(this.msd.particles[3], this.msd.particles[12], plank_ks, plank_kd, plank_length);
-            // this.msd.springs[20].connect(this.msd.particles[4], this.msd.particles[13], plank_ks, plank_kd, plank_length);
-            // this.msd.springs[21].connect(this.msd.particles[5], this.msd.particles[14], plank_ks, plank_kd, plank_length);
-            // this.msd.springs[22].connect(this.msd.particles[6], this.msd.particles[15], plank_ks, plank_kd, plank_length);
-            // this.msd.springs[23].connect(this.msd.particles[7], this.msd.particles[16], plank_ks, plank_kd, plank_length);
-            // this.msd.springs[24].connect(this.msd.particles[8], this.msd.particles[17], plank_ks, plank_kd, plank_length);
-            spring_index += 9;
+            spring_index += particles_in_rope;
 
             // Add railings
             const railing_height = 2;
@@ -219,37 +166,18 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             this.create_rope(particles_in_rope, particle_index, 0, railing_height, -2);
             this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length);
+            particle_index += particles_in_rope;
+            spring_index += springs_in_rope;
 
-            // Add ropes between railings and the bottom ropes on the bridge
-            // Magic numbers galore (refactor later)
-            let railing_ks = 5000;
-            let railing_kd = 500;
-            let railing_length = 1.75;
-            this.msd.create_springs(18);
-            for(let i = 0; i < 18 ; i++) {
-                this.msd.springs[41 + i].connect(this.msd.particles[i], this.msd.particles[18 + i], railing_ks, railing_kd, railing_length);
+            // Add ropes to connect the railings and the bottom ropes on the bridge
+            const railing_ks = 5000;
+            const railing_kd = 500;
+            const railing_length = 1.75;
+            this.msd.create_springs(particles_in_rope * 2);
+            for(let i = 0; i < particles_in_rope * 2 ; i++) {
+                this.msd.springs[spring_index + i].connect(this.msd.particles[i], this.msd.particles[particles_in_rope * 2 + i], railing_ks, railing_kd, railing_length);
             }
-            // this.msd.create_springs(9);
-            // this.msd.springs[41].connect(this.msd.particles[0], this.msd.particles[18], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[42].connect(this.msd.particles[1], this.msd.particles[19], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[43].connect(this.msd.particles[2], this.msd.particles[20], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[44].connect(this.msd.particles[3], this.msd.particles[21], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[45].connect(this.msd.particles[4], this.msd.particles[22], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[46].connect(this.msd.particles[5], this.msd.particles[23], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[47].connect(this.msd.particles[6], this.msd.particles[24], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[48].connect(this.msd.particles[7], this.msd.particles[25], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[49].connect(this.msd.particles[8], this.msd.particles[26], railing_ks, railing_kd, railing_length);
-            //
-            // this.msd.create_springs(9);
-            // this.msd.springs[50].connect(this.msd.particles[9], this.msd.particles[27], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[51].connect(this.msd.particles[10], this.msd.particles[28], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[52].connect(this.msd.particles[11], this.msd.particles[29], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[53].connect(this.msd.particles[12], this.msd.particles[30], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[54].connect(this.msd.particles[13], this.msd.particles[31], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[55].connect(this.msd.particles[14], this.msd.particles[32], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[56].connect(this.msd.particles[15], this.msd.particles[33], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[57].connect(this.msd.particles[16], this.msd.particles[34], railing_ks, railing_kd, railing_length);
-            // this.msd.springs[58].connect(this.msd.particles[17], this.msd.particles[35], railing_ks, railing_kd, railing_length);
+
 
         }
 
@@ -259,6 +187,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.msd.particles[start_index + num - 1].top =  true;
 
             for(let i = 0; i < num; i++) {
+                // NOTE: hardcoded the starting points of the ropes here
                 let x = -1;
                 let y = 5;
                 let z = -1;
@@ -279,15 +208,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 this.msd.particles[start_index + i].set_properties(1, x + i + x_offset, y + y_offset, z + z_offset, vx, vy, vz);
             }
 
-            // this.msd.particles[18].set_properties(1, -1, railing_height, -1, 0, 0, 0);
-            // this.msd.particles[19].set_properties(1, 0, railing_height, -0.1, 0, 5, 0);
-            // this.msd.particles[20].set_properties(1, 1, railing_height, -0.1, 0, 5, 0);
-            // this.msd.particles[21].set_properties(1, 1, railing_height, -1, 0, 5, 0);
-            // this.msd.particles[22].set_properties(1, 2, railing_height, -1, 0, 5, 0);
-            // this.msd.particles[23].set_properties(1, 3, railing_height, -1, 0, 5, 0);
-            // this.msd.particles[24].set_properties(1, 4, railing_height, -1, 0, 5, 0);
-            // this.msd.particles[25].set_properties(1, 5, railing_height, -1, 0, 5, 0);
-            // this.msd.particles[26].set_properties(1, 6, railing_height, -1, 0, 5, 0);
+
 
         }
 
@@ -306,18 +227,10 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 this.msd.springs[spring_start_index + i].connect(this.msd.particles[particle_start_index + i], this.msd.particles[particle_start_index + i + 1], ks, kd, length);
             }
 
-            // this.msd.springs[8].connect(this.msd.particles[9], this.msd.particles[10], ks, kd, length);
-            // this.msd.springs[9].connect(this.msd.particles[10], this.msd.particles[11], ks, kd, length);
-            // this.msd.springs[10].connect(this.msd.particles[11], this.msd.particles[12], ks, kd, length);
-            // this.msd.springs[11].connect(this.msd.particles[12], this.msd.particles[13], ks, kd, length);
-            // this.msd.springs[12].connect(this.msd.particles[13], this.msd.particles[14], ks, kd, length);
-            // this.msd.springs[13].connect(this.msd.particles[14], this.msd.particles[15], ks, kd, length);
-            // this.msd.springs[14].connect(this.msd.particles[15], this.msd.particles[16], ks, kd, length);
-            // this.msd.springs[15].connect(this.msd.particles[16], this.msd.particles[17], ks, kd, length);
         }
 
         render_animation(caller) {
-            Shader.assign_camera(Mat4.look_at(vec3(20, 2, 20), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
+            Shader.assign_camera(Mat4.look_at(vec3(25, 10, 5), vec3(-200, -100, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -356,7 +269,7 @@ export class Rope_bridge extends Rope_bridge_base {
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
 
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(0.5, 0.5, 0.5)));
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
 
@@ -380,15 +293,19 @@ export class Rope_bridge extends Rope_bridge_base {
             let new_coord = vec(texture2_coord[i][0] * 2, texture2_coord[i][1] * 2); // Zoom out on each axis (so the texture appears multiple times on each face)
             this.shapes.mountain.arrays.texture_coord[i] = new_coord;
         }
-        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(-2, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.rock);
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(-2, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
 
 
-        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(7, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.rock);
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(15, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
 
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-3, 4, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-3, 3, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-1, 0, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 1, 1, 1)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(6, 0, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(3, -1, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
 
-        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(9, 4, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
-
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 2, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 0, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(17, 1, 0).times(Mat4.scale(2, 2, 2)), this.materials.rock);
 
 
         // Draw chain (now a rope)
