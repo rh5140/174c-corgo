@@ -1,10 +1,10 @@
 import { Corgo } from "./assets/corgi/corgi.js";
+import { Frog } from "./assets/frog/frog.js";
 import { Tree } from "./assets/tree/tree.js";
 import { defs, tiny } from './examples/common.js';
 import { Shape_From_File } from "./examples/obj-file-demo.js";
 import { Mass_Spring_Damper } from "./lib/particle_system.js";
 import { Curve_Shape, Hermite_Spline } from "./lib/spline.js";
-import {Frog} from "./assets/frog/frog.js";
 
 // Pull these names into this module's scope for convenience:
 const {vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
@@ -64,7 +64,31 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
                 specularity: 0,
                 color: color(1, 1, 1, 1),
                 texture: new Texture("assets/mushroom.png")
-            };
+            }
+            this.materials.mushroomFloor = {
+                shader: phong,
+                ambient: 1,
+                diffusivity: 1,
+                specularity: 1,
+                color: color(1, 1, 1, 1),
+                texture: new Texture("assets/environment/Mushroom_Top_001_basecolor.jpg")
+            }
+            this.materials.pinkSky = {
+                shader: phong,
+                ambient: 1,
+                diffusivity: 1,
+                specularity: 1,
+                color: color(1, 1, 1, 1),
+                texture: new Texture("assets/environment/pastel_pink.jpg")
+            }
+            ;
+
+            this.audio = {
+                bgm: new Audio(),
+                bark: new Audio(),
+            }
+            this.audio.bgm.src = "assets/audio/frog_ambient.wav"; // https://freesound.org/people/soundshmyak/sounds/697832/
+            this.audio.bark.src = "assets/audio/bark.mp3"; // https://www.zapsplat.com/music/dog-bark-small-2/
 
             // Spline
             this.spline = new Hermite_Spline();
@@ -183,30 +207,94 @@ export class Mushroom_scene extends Mushroom_scene_base {                       
             // function times(), which generates products of matrices.
 
         const blue = color(0, 0, 1, 1), yellow = color(0.7, 1, 0, 1), red = color(1, 0, 0, 1),
-            black = color(0, 0, 0, 1), white = color(1, 1, 1, 1);
+            black = color(0, 0, 0, 1), white = color(1, 1, 1, 1),
+            forest_green = color(2 / 255, 48 / 255, 32 / 255, 1), pink = color(255/255, 196/255, 220/255, 1);
 
         const t = this.t = this.uniforms.animation_time / 1000;
 
         // !!! Draw ground
         // TRANSLATED DOWN 3
+        // Texture from: https://3dtextures.me/2020/03/23/mushroom-top-001/
         let floor_transform = Mat4.translation(0, -3, 0).times(Mat4.scale(100, 0.01, 100));
-        this.shapes.box.draw(caller, this.uniforms, floor_transform, {
-            ...this.materials.plastic,
-            color: color(2 / 255, 48 / 255, 32 / 255, 1)
-        });
+        this.shapes.box.draw(caller, this.uniforms, floor_transform, this.materials.mushroomFloor);
+        // this.shapes.box.draw(caller, this.uniforms, floor_transform, {
+        //     ...this.materials.plastic,
+        //     color: dark_red
+        // });
 
         // TODO: you should draw spline here.
         // this.curve.draw(caller, this.uniforms);
 
+        // audio??
+        this.audio.bgm.play();
+        const chance = Math.random();
+        if (chance > 0.99) {
+            this.audio.bark.play();
+        }
+
         // Draw Corgo
         this.corgo.draw(caller, this.uniforms);
 
-        // Draw mushroom
+        // Draw center mushroom
         this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), this.materials.mushroomMtl);
 
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)));
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
+        // medium mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3,-2,0).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3,-2,0).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-2,-2,-2).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        // tallish medium mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3,-1.75,3).times(Mat4.scale(0.5,0.75,0.5)), this.materials.mushroomMtl);
+        // small mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1,-2.5,3).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1,-2.5,-3).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(2.5,-2.5,2).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3,-2.5,-4).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3,-2.5,4).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        // tiny mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5,-2.75,4.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5,-2.75,-2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5,-2.75,-4.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1.5,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5,-2.75,2.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.9,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1,-2.75,5).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5,-2.75,3).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3,-2.75,3).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(4,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        // BIGGG mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-16, 2.5, -2).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(2.5, 4, -10).times(Mat4.scale(4, 4, 4)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(18, 2.5, 5).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-10, 4, 10).times(Mat4.scale(4, 4, 4)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(15, 2, -5).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+
+        // drawing more frogs
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-8,6,-8));
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-3,-2.75,-2).times(Mat4.scale(0.25,0.25,0.25)));
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(3,-2.75,-2).times(Mat4.scale(0.25,0.25,0.25)));
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-3,-2.75,2).times(Mat4.scale(0.25,0.25,0.25)));
+
+        // front 3 trees
+        // this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)));
+        // this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
+        // this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
+
+        // draw sky???
+        this.shapes.ball.draw(caller, this.uniforms, Mat4.identity().times(Mat4.scale(50,50,50)), {...this.materials.plastic, color: blue});
+        // my texture is just white so ig i did something wrong
+        //this.shapes.ball.draw(caller, this.uniforms, Mat4.identity().times(Mat4.scale(50,50,50)), this.materials.pinkSky);
 
         this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-30, 10, 0).times(Mat4.scale(3, 3, 3)), {
             ...this.materials.plastic,
@@ -224,7 +312,7 @@ export class Mushroom_scene extends Mushroom_scene_base {                       
         // Draw bouncing thing placeholder
         let particle_pos = this.msd.particles[0].position;
         let particle_y = particle_pos[1];
-        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+1,0))
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+0.5,0).times(Mat4.scale(0.5,0.5,0.5)));
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;

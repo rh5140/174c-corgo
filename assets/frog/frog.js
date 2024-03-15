@@ -1,5 +1,5 @@
-import {defs, tiny} from "../../examples/common.js";
-import {Shape_From_File} from "../../examples/obj-file-demo.js";
+import { defs, tiny } from "../../examples/common.js";
+import { Shape_From_File } from "../../examples/obj-file-demo.js";
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
 export
