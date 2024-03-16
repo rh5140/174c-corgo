@@ -90,7 +90,6 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 diffusivity: 1.0,
                 specularity: 0.0,
                 color: color(1.0, 1.0, 1.0, 0.6),
-                // texture: new Texture("assets/rock.jpg", "LINEAR_MIPMAP_LINEAR")
             }
             this.materials.water = {
                 shader: tex_phong,
@@ -489,11 +488,11 @@ export class Rope_bridge extends Rope_bridge_base {
 
                 let distance_from_goal = Math.sqrt((this.corgo.position[0] - this.goal_mushroom_position[0])**2 + (this.corgo.position[1] - this.goal_mushroom_position[1])**2 + (this.corgo.position[2] - this.goal_mushroom_position[2])**2 );
                 if(distance_from_goal < 3) {
-                    select_scene(1)
+                    // select_scene(1)
 
-                    reached_goal = true;
-                    this.running = false;
-                    break;
+                    // reached_goal = true;
+                    // this.running = false;
+                    // break;
 
                     //TODO: do some destruction so that webgl doesn't die when the new scene is loaded in
                 }

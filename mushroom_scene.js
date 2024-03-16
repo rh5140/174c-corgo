@@ -33,7 +33,9 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
                 'mushroom': new Shape_From_File("assets/mushroom.obj"),
                 'cloud': new Shape_From_File("assets/cloud.obj"),
                 'tree': new Tree(),
-                'frog': new Frog()
+                'frog': new Frog(),
+                'background': new Shape_From_File("assets/background.obj"),
+                'mountain': new Shape_From_File("assets/mountain/mountain.obj"),
             };
 
             // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -66,22 +68,36 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
                 texture: new Texture("assets/mushroom.png")
             }
             this.materials.mushroomFloor = {
-                shader: phong,
-                ambient: 1,
-                diffusivity: 1,
-                specularity: 1,
-                color: color(1, 1, 1, 1),
+                shader: tex_phong,
+                ambient: .5,
+                diffusivity: .5,
+                specularity: 0,
+                color: color(0, 0, 0, 1),
                 texture: new Texture("assets/environment/Mushroom_Top_001_basecolor.jpg")
             }
             this.materials.pinkSky = {
-                shader: phong,
+                shader: tex_phong,
                 ambient: 1,
                 diffusivity: 1,
-                specularity: 1,
-                color: color(1, 1, 1, 1),
+                specularity: 0,
+                color: color(0, 0, 0, 1),
                 texture: new Texture("assets/environment/pastel_pink.jpg")
             }
-            ;
+            this.materials.cloud = {
+                shader: phong,
+                ambient: 0.5,
+                diffusivity: 1.0,
+                specularity: 0.0,
+                color: color(1.0, .753, .796, 0.6),
+            }
+            this.materials.mountain = {
+                shader: tex_phong,
+                ambient: .4,
+                diffusivity: .6,
+                specularity: 0.3,
+                color: color(1, 1, 1    , 1),
+                texture: new Texture("assets/mountain/mountain.png")
+            }
 
             this.audio = {
                 bgm: new Audio(),
@@ -438,10 +454,10 @@ export class Mushroom_scene extends Mushroom_scene_base {                       
         this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3-20,-1.75,3).times(Mat4.scale(0.5,0.75,0.5)), this.materials.mushroomMtl);
 
         // drawing more frogs
-        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-8,6,-8));
-        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-3,-2.75,-2).times(Mat4.scale(0.25,0.25,0.25)));
-        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(3,-2.75,-2).times(Mat4.scale(0.25,0.25,0.25)));
-        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-3,-2.75,2).times(Mat4.scale(0.25,0.25,0.25)));
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-8,6,-8).times(Mat4.rotation(math.PI, 0, 1, 0)));
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-3,-2.75,-2).times(Mat4.rotation(math.PI/2, 0, 1, 0)).times(Mat4.scale(0.25,0.25,0.25)));
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(3,-2.75,-2).times(Mat4.rotation(-math.PI/2, 0, 1, 0)).times(Mat4.scale(0.25,0.25,0.25)));
+        this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-3,-2.75,2).times(Mat4.rotation(math.PI/3, 0, 1, 0)).times(Mat4.scale(0.25,0.25,0.25)));
 
         // front 3 trees
         // this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(3, 3, 3)));
@@ -449,27 +465,25 @@ export class Mushroom_scene extends Mushroom_scene_base {                       
         // this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
 
         // draw sky???
-        this.shapes.ball.draw(caller, this.uniforms, Mat4.identity().times(Mat4.scale(50,50,50)), {...this.materials.plastic, color: blue});
+        this.shapes.ball.draw(caller, this.uniforms, Mat4.identity().times(Mat4.scale(70,70,70)), this.materials.pinkSky);
         // my texture is just white so ig i did something wrong
         //this.shapes.ball.draw(caller, this.uniforms, Mat4.identity().times(Mat4.scale(50,50,50)), this.materials.pinkSky);
 
-        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-30, 10, 0).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(1, 1, 1, 1)
-        });
-        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(0, 10, -30).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(1, 1, 1, 1)
-        });
-        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-25, 10, -25).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(1, 1, 1, 1)
-        });
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-30, 10, 0).times(Mat4.scale(3, 3, 3)), this.materials.cloud);
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(0, 10, -30).times(Mat4.rotation(math.PI/4, 0, 1, 0)).times(Mat4.scale(3, 3, 3)), this.materials.cloud);
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-25, 10, -25).times(Mat4.rotation(-math.PI/4, 0, 1, 0)).times(Mat4.scale(3, 3, 3)), this.materials.cloud);
+
+        for(let i = 0; i < math.PI; i+=math.PI/8) {
+            this.shapes.mountain.draw(caller, this.uniforms, Mat4.rotation(i, 0, 1, 0).times(Mat4.translation(0, 0, -75)).times(Mat4.scale(20, 20, 20)), this.materials.mountain);
+        }
+
 
         // Draw bouncing thing placeholder
         let particle_pos = this.msd.particles[0].position;
         let particle_y = particle_pos[1];
         this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(0,particle_y+0.5,0).times(Mat4.scale(0.5,0.5,0.5)));
+
+        // this.shapes.background.draw(caller, this.uniforms, Mat4.scale(40,40,40), this.materials.pinkSky)
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
