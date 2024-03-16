@@ -20,15 +20,27 @@ Object.assign (defs,
 
 // ******************** SELECT THE DEMO TO DISPLAY:
 
+const element_to_replace = document.querySelector ("#main-section");
 
-let scenes = {1: Rope_bridge, 2: Mushroom_scene};
-
-const scene_selector = (i) => scenes[i];
+let scenes = [Rope_bridge, Mushroom_scene];
+let i_scenes = scenes.map (scene => new scene ());
 
 // const main_scene        = Rope_bridge; // default
 const main_scene = Rope_bridge;
-const additional_scenes = [];
 
+function select_scene(i) {
+    element_to_replace.innerHTML = "";
+    const curScene = i_scenes[i];
+    curScene.render_layout (element_to_replace);
+    curScene.init()
+}
 
-export { additional_scenes, defs, main_scene, scene_selector };
+document.getElementById("p1").addEventListener("click", () => { select_scene(0) });
+document.getElementById("p2").addEventListener("click", () => { select_scene(1) });
+
+select_scene(0)
+
+console.log("Test")
+
+export { scenes, defs, main_scene, select_scene };
 

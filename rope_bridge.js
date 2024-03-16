@@ -4,9 +4,7 @@ import {Mass_Spring_Damper} from "./lib/particle_system.js";
 import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
 import {Corgo} from "./assets/corgi/corgi.js";
 import {Tree, Small_Tree, Dead_Tree} from "./assets/tree/tree.js";
-
-
-import {element} from "./index.js";
+import {select_scene} from "./main-scene.js"
 
 // Pull these names into this module's scope for convenience:
 const {vec, vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
@@ -308,7 +306,9 @@ export class Rope_bridge extends Rope_bridge_base {
 
         const light_blue = color(0, 0.3, 0.7, 1);
 
-        this.audio.wind.play();
+        this.audio.wind.play().catch((e) => {
+            console.log("Not ready")
+        });
 
         // !!! Draw ground
         // TRANSLATED DOWN 3
@@ -477,11 +477,9 @@ export class Rope_bridge extends Rope_bridge_base {
 
                 let distance_from_goal = Math.sqrt((this.corgo.position[0] - this.goal_mushroom_position[0])**2 + (this.corgo.position[1] - this.goal_mushroom_position[1])**2 + (this.corgo.position[2] - this.goal_mushroom_position[2])**2 );
                 if(distance_from_goal < 3) {
-                    console.log("REACHED MUSHROOM!!!")
-                    reached_goal = true;
+                    select_scene(1)
 
-                    let event = new Event('click');
-                    element.dispatchEvent(event);
+                    reached_goal = true;
                     this.running = false;
                     break;
 
