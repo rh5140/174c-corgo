@@ -136,6 +136,9 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
 
             this.tail_angle = 0;
             this.tail_forward = true;
+
+            // camera change stuff
+            this.corgo_appear = false;
         }
 
         render_animation(caller) {                                                // display():  Called once per frame of animation.  We'll isolate out
@@ -156,7 +159,13 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
                 // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
 
                 // !!! Camera changed here
-                Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
+                // Original camera orientation
+                // position, orientation
+                //Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
+
+                // Start w/ focus on frog
+                Shader.assign_camera(Mat4.look_at(vec3(12, 12, 12), vec3(-100, -100, -100), vec3(0, 1, 0)), this.uniforms);
+
             }
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
@@ -225,15 +234,28 @@ export class Mushroom_scene extends Mushroom_scene_base {                       
         // TODO: you should draw spline here.
         // this.curve.draw(caller, this.uniforms);
 
-        // audio??
-        this.audio.bgm.play();
-        const chance = Math.random();
-        if (chance > 0.99) {
+        // Camera change test
+        if (this.t_sim > 5 && this.t_sim < 10) {
+            Shader.assign_camera(Mat4.look_at(vec3(1.75, 5, 1.75), vec3(-100, -300, -100), vec3(0, 1, 0)), this.uniforms);
+        }
+        else if (this.t_sim > 10 && !this.corgo_appear) {
+            Shader.assign_camera(Mat4.look_at(vec3(12, 1.5, 12), vec3(-100, -25, -100), vec3(0, 1, 0)), this.uniforms);
+            this.corgo_appear = true;
             this.audio.bark.play();
         }
 
+        // audio??
+        this.audio.bgm.play();
+
         // Draw Corgo
-        this.corgo.draw(caller, this.uniforms);
+        if (this.corgo_appear)
+        {
+            this.corgo.draw(caller, this.uniforms);
+            const chance = Math.random();
+            if (chance > 0.99) {
+                this.audio.bark.play();
+            }
+        }
 
         // Draw center mushroom
         this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0,-1,0), this.materials.mushroomMtl);
@@ -279,6 +301,135 @@ export class Mushroom_scene extends Mushroom_scene_base {                       
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(18, 2.5, 5).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-10, 4, 10).times(Mat4.scale(4, 4, 4)), this.materials.mushroomMtl);
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(15, 2, -5).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+
+        // sobs drawing more mushrooms
+        // small mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 + 10,-2.5,3).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 + 10,-2.5,-3).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(2.5 + 10,-2.5,2).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 + 10,-2.5,-4).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3 + 10,-2.5,4).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        // tiny mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5 + 10,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,4.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9 + 10,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5 + 10,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,-2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,-4.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9 + 10,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 + 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1.5 + 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 + 10,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 + 10,-2.75,2.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.9 + 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 + 10,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 + 10,-2.75,5).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5 + 10,-2.75,3).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 + 10,-2.75,3).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5 + 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(4 + 10,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        // small mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 + 10,-2.5,3+ 2).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 + 10,-2.5,-3+ 2).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(2.5 + 10,-2.5,2+ 2).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 + 10,-2.5,-4+ 2).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3 + 10,-2.5,4+ 2).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        // tiny mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,4+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5 + 10,-2.75,4+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,2+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,4.4+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9 + 10,-2.75,4+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,-4+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5 + 10,-2.75,-4+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,-2+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 + 10,-2.75,-4.4+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9 + 10,-2.75,-4+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 + 10,-2.75,2+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1.5 + 10,-2.75,2+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 + 10,-2.75,1+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 + 10,-2.75,2.4+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.9 + 10,-2.75,2+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 + 10,-2.75,1+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 + 10,-2.75,5+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5 + 10,-2.75,3+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 + 10,-2.75,3+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5 + 10,-2.75,2+ 2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(4 + 10,-2.75,1+2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 + 10,-2.5,3).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 + 10,-2.5,-3).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(2.5 + 10,-2.5,2).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 + 10,-2.5,-4).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3 + 10,-2.5,4).times(Mat4.scale(0.2,0.25,0.2)), this.materials.mushroomMtl);
+        // tiny mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5 - 10,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,4.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9 - 10,-2.75,4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5 - 10,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,-2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,-4.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9 - 10,-2.75,-4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 - 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1.5 - 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 - 10,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 - 10,-2.75,2.4).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.9 - 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 - 10,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 - 10,-2.75,5).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5 - 10,-2.75,3).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 - 10,-2.75,3).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5 - 10,-2.75,2).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(4 - 10,-2.75,1).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3-10,-2,0).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3-10,-2,0).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-2-10,-2,-2).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3-10,-2,0+10).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3-10,-2,0+10).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-2-10,-2,-2+10).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5 - 10,-2.75,4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,2+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,4.4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9 - 10,-2.75,4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,-4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-1.5 - 10,-2.75,-4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,-2+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.5 - 10,-2.75,-4.4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(0.9 - 10,-2.75,-4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 - 10,-2.75,2+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1.5 - 10,-2.75,2+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 - 10,-2.75,1+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.5 - 10,-2.75,2.4+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-0.9 - 10,-2.75,2+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 - 10,-2.75,1+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(1 - 10,-2.75,5+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5 - 10,-2.75,3+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3 - 10,-2.75,3+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3.5 - 10,-2.75,2+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(4 - 10,-2.75,1+10).times(Mat4.scale(0.1,0.1,0.1)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3-10,-2,0+10).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3-10,-2,0+10).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-2-10,-2,-2+10).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-16-10, 2.5, -2-20).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(2.5-10, 4, -10-20).times(Mat4.scale(4, 4, 4)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-8-10, 2, -8-20).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(18-10, 2.5, 5-20).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-10-10, 4, 10-20).times(Mat4.scale(4, 4, 4)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(15-10, 2, -5-20).times(Mat4.scale(3, 3, 3)), this.materials.mushroomMtl);
+        
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(3-20,-2,0).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3-20,-2,0).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-2-20,-2,-2).times(Mat4.scale(0.5,0.5,0.5)), this.materials.mushroomMtl);
+        // tallish medium mushrooms
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(-3-20,-1.75,3).times(Mat4.scale(0.5,0.75,0.5)), this.materials.mushroomMtl);
 
         // drawing more frogs
         this.shapes.frog.draw(caller, this.uniforms,  Mat4.translation(-8,6,-8));
