@@ -153,19 +153,19 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
 
 
             //right
-            this.flower_spline.add_point(4, 3, -3, -10, 2, 10);
+            this.flower_spline.add_point(4, 4, -2, -10, 2, 10);
 
             //right back
-            this.flower_spline.add_point(2, 5.0, 0, 10, 0, 10);
+            this.flower_spline.add_point(2, 5, 0, 10, 0, 10);
 
             //left
-            this.flower_spline.add_point(4, 3, 3, -10, -2, 10);
+            this.flower_spline.add_point(4, 4, 2, -10, -2, 10);
 
             //left back
-            this.flower_spline.add_point(2, 5.0, 0, 10, 0, -10);
+            this.flower_spline.add_point(2, 5, 0, 10, 0, -10);
 
             //right
-            this.flower_spline.add_point(4, 3, -3, -10, 2, 10);
+            this.flower_spline.add_point(4, 4, -2, -10, 2, 10);
 
 
             //this.flower_spline.add_point(2, 6.0, 0, -10.0, 0.0, 20.0);
@@ -175,6 +175,32 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
 
             const curve_fn_flower = (t, i_0, i_1) => this.flower_spline.get_position(t, i_0, i_1);
             this.flower_curve = new Curve_Shape(curve_fn_flower, this.sample_cnt, this.flower_spline.size);
+
+
+            //left arm
+            this.flower_spline_left = new Hermite_Spline();
+
+            this.flower_spline_left.add_point(0, 3, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 3, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(0, 3, 5, 0, 0, 0);
+
+            const curve_fn_flower_left = (t, i_0, i_1) => this.flower_spline_left.get_position(t, i_0, i_1);
+            this.flower_curve_left = new Curve_Shape(curve_fn_flower_left, this.sample_cnt, this.flower_spline_left.size);
+
+            //right
+
+            this.flower_spline_right = new Hermite_Spline();
+
+            this.flower_spline_right.add_point(0, 3, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -3, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(0, 3, -5, 0, 0, 0);
+            
+            const curve_fn_flower_right = (t, i_0, i_1) => this.flower_spline_right.get_position(t, i_0, i_1);
+            this.flower_curve_right = new Curve_Shape(curve_fn_flower_right, this.sample_cnt, this.flower_spline_right.size);
         }
 
         render_animation(caller) {                                                // display():  Called once per frame of animation.  We'll isolate out
@@ -261,7 +287,10 @@ export class Corgo_collision extends Corgo_collision_base {                     
         // TODO: you should draw spline here.
         //this.curve.draw(caller, this.uniforms);
 
-        this.flower_curve.draw(caller, this.uniforms);
+        //flower debug
+        //this.flower_curve.draw(caller, this.uniforms);
+        //this.flower_curve_right.draw(caller, this.uniforms);
+        //this.flower_curve_left.draw(caller, this.uniforms);
 
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
@@ -351,6 +380,19 @@ export class Corgo_collision extends Corgo_collision_base {                     
                 iter = f_speed % 1.0;
                 this.flower.update_IK(this.flower.eyes_node, this.flower_spline.get_position(iter, idx, idx+1));
                 
+                //left
+                num_points = this.flower_spline_left.size - 1;
+                idx = Math.floor(f_speed % num_points);
+                iter = f_speed % 1.0;
+                this.flower.update_IK(this.flower.l_hand_node, this.flower_spline_left.get_position(iter, idx, idx+1), this.flower.midsection_node);
+
+                //right
+                num_points = this.flower_spline_right.size - 1;
+                idx = Math.floor(f_speed % num_points);
+                iter = f_speed % 1.0;
+                this.flower.update_IK(this.flower.r_hand_node, this.flower_spline_right.get_position(iter, idx, idx+1), this.flower.midsection_node);
+
+
                 // normal update
                 this.msd.update(this.timestep)
                 this.t_sim += this.timestep;
