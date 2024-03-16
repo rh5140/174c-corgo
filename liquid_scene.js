@@ -38,14 +38,35 @@ export class Liquid_Scene extends Component{
             specularity: .0,
             color: color(1, 1, 1, 1)
         }
+        this.materials.water = {
+            shader: phong,
+            ambient: .2,
+            diffusivity: 0.1,
+            specularity: 1,
+            color: color(.5, .5, 1, .2)
+        }
 
         this.fluid = new Simulation(this.shapes.box, this.materials.plastic);
-        this.fluid.create_particles(1);
     }
     render_animation(caller) {
-        //Camera
-        Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
+        if (!caller.controls) {
+            this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
+            caller.controls.add_mouse_controls(caller.canvas);
+
+            // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
+            // matrix follows the usual format for transforms, but with opposite values (cameras exist as
+            // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
+            // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
+            // orthographic() automatically generate valid matrices for one.  The input arguments of
+            // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
+
+            // !!! Camera changed here
+            Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
+        }
         this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
+        //Camera
+        // Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
+        // this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
         //Lights
         const t = this.t = this.uniforms.animation_time / 1000;
@@ -64,10 +85,11 @@ export class Liquid_Scene extends Component{
         }
         // this.fluid.update();
         // this.fluid.create_particles(1);
-        this.fluid.draw(caller, this.uniforms, this.materials.plastic)
+        this.fluid.draw(caller, this.uniforms, this.materials.water)
+        if(math.random() > 0.5) this.fluid.create_particles(1);
 
 
-        // console.log(dt)
+        console.log(dt)
         // y = 0
     }
 }
