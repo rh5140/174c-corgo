@@ -114,6 +114,93 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
 
             this.tail_angle = 0;
             this.tail_forward = true;
+
+
+            //flower
+            this.flower_toggle = 0;
+            this.flower_up = vec3(0, 0, 0);
+
+
+
+            /*
+            //flower spline
+            this.flower_spline = new Hermite_Spline();
+
+            //right front
+            this.flower_spline.add_point(6, 5.0, -1, -10, 0, -10);
+
+            //right
+            this.flower_spline.add_point(4, 3, -3, -10, 2, 10);
+
+            //right back
+            this.flower_spline.add_point(2, 5.0, -1, 10, 0, 10);
+
+            //left front
+            this.flower_spline.add_point(6, 5.0, 1, 10, 0, 10);
+            
+            //left
+            this.flower_spline.add_point(4, 3, 3, -10, -2, 10);
+
+            //left back
+            this.flower_spline.add_point(2, 5.0, 1, 10, 0, -10);
+            
+
+            //right front
+            this.flower_spline.add_point(6, 5.0, -1, -10, 0, -10);
+            */
+            //flower spline
+            this.flower_spline = new Hermite_Spline();
+
+
+            //right
+            this.flower_spline.add_point(4, 4, -2, -10, 2, 10);
+
+            //right back
+            this.flower_spline.add_point(2, 5, 0, 10, 0, 10);
+
+            //left
+            this.flower_spline.add_point(4, 4, 2, -10, -2, 10);
+
+            //left back
+            this.flower_spline.add_point(2, 5, 0, 10, 0, -10);
+
+            //right
+            this.flower_spline.add_point(4, 4, -2, -10, 2, 10);
+
+
+            //this.flower_spline.add_point(2, 6.0, 0, -10.0, 0.0, 20.0);
+            //this.flower_spline.add_point(-5.0, -4.0, -5, -30.0, 0.0, 30.0);
+            //this.flower_spline.add_point(-5.0, -2.0, 5.0, 30.0, 0.0, 30.0);
+            //this.flower_spline.add_point(5.0, -2.0, 5.0, 30.0, 0.0, -30.0);
+
+            const curve_fn_flower = (t, i_0, i_1) => this.flower_spline.get_position(t, i_0, i_1);
+            this.flower_curve = new Curve_Shape(curve_fn_flower, this.sample_cnt, this.flower_spline.size);
+
+
+            //left arm
+            this.flower_spline_left = new Hermite_Spline();
+
+            this.flower_spline_left.add_point(0, 3, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 3, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(0, 3, 5, 0, 0, 0);
+
+            const curve_fn_flower_left = (t, i_0, i_1) => this.flower_spline_left.get_position(t, i_0, i_1);
+            this.flower_curve_left = new Curve_Shape(curve_fn_flower_left, this.sample_cnt, this.flower_spline_left.size);
+
+            //right
+
+            this.flower_spline_right = new Hermite_Spline();
+
+            this.flower_spline_right.add_point(0, 3, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -3, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(0, 3, -5, 0, 0, 0);
+            
+            const curve_fn_flower_right = (t, i_0, i_1) => this.flower_spline_right.get_position(t, i_0, i_1);
+            this.flower_curve_right = new Curve_Shape(curve_fn_flower_right, this.sample_cnt, this.flower_spline_right.size);
         }
 
         render_animation(caller) {                                                // display():  Called once per frame of animation.  We'll isolate out
@@ -152,7 +239,7 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
     }
 
 
-export class Corgo_collision extends Corgo_collision_base {                                                    // **Part_one_hermite** is a Scene object that can be added to any display canvas.
+export class FlowerDanceScene extends Corgo_collision_base {                                                    // **Part_one_hermite** is a Scene object that can be added to any display canvas.
                                                                                                                // This particular scene is broken up into two pieces for easier understanding.
                                                                                                                // See the other piece, My_Demo_Base, if you need to see the setup code.
                                                                                                                // The piece here exposes only the display() method, which actually places and draws
@@ -198,7 +285,12 @@ export class Corgo_collision extends Corgo_collision_base {                     
         });
 
         // TODO: you should draw spline here.
-        // this.curve.draw(caller, this.uniforms);
+        //this.curve.draw(caller, this.uniforms);
+
+        //flower debug
+        //this.flower_curve.draw(caller, this.uniforms);
+        //this.flower_curve_right.draw(caller, this.uniforms);
+        //this.flower_curve_left.draw(caller, this.uniforms);
 
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
@@ -281,20 +373,79 @@ export class Corgo_collision extends Corgo_collision_base {                     
                 this.corgo.velocity = this.spline.get_velocity(iter, idx, idx + 1);
                 this.corgo.acceleration = this.spline.get_velocity(iter, idx, idx + 1);
 
+                //flower ik
+                let f_speed = this.t_sim * 1.5;
+                num_points = this.flower_spline.size - 1;
+                idx = Math.floor(f_speed % num_points);
+                iter = f_speed % 1.0;
+                this.flower.update_IK(this.flower.eyes_node, this.flower_spline.get_position(iter, idx, idx+1));
+                
+                //left
+                num_points = this.flower_spline_left.size - 1;
+                idx = Math.floor(f_speed % num_points);
+                iter = f_speed % 1.0;
+                this.flower.update_IK(this.flower.l_hand_node, this.flower_spline_left.get_position(iter, idx, idx+1), this.flower.midsection_node);
+
+                //right
+                num_points = this.flower_spline_right.size - 1;
+                idx = Math.floor(f_speed % num_points);
+                iter = f_speed % 1.0;
+                this.flower.update_IK(this.flower.r_hand_node, this.flower_spline_right.get_position(iter, idx, idx+1), this.flower.midsection_node);
+
+
                 // normal update
                 this.msd.update(this.timestep)
                 this.t_sim += this.timestep;
+
             }
         }
 
         let counter = 0
         counter = 0
+        /*
         while(counter < 10){
           counter++
-          // if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
-          // if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
-          // if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+          if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
+          if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+          if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
         }
+        */
+       
+        //funne dance
+        //this.flower.position.plus(vec3(0, 3, 0))
+
+        let fstate = this.flower_toggle
+        let flower_targ_1 = vec3(1, 2, 0);
+        let flower_targ_2 = vec3(2, 4, 2);
+
+        //console.log(this.flower.eyes_node.location_matrix);
+
+        /*
+        while(counter < 10){
+            counter++;
+            if(fstate < 50){
+                if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
+                if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+                if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+                this.flower_up = this.corgo.position.plus(vec3(0, 10, 0))
+            }
+            else if(fstate >= 50){
+                if(this.flower.update_IK(this.flower.eyes_node, this.flower_up))return;
+                if(this.flower.update_IK(this.flower.r_hand_node, flower_targ_1, this.flower.midsection_node)) return;
+                if(this.flower.update_IK(this.flower.l_hand_node, flower_targ_1, this.flower.midsection_node)) return;
+            }
+        }
+        */
+
+        
+        this.flower_toggle++;
+        if(this.flower_toggle >= 100){
+            this.flower_toggle = 0;
+        }
+        
+
+        //if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+        //if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
 
         //crappy corgo animation
         //legs
