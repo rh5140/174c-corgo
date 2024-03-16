@@ -5,9 +5,13 @@ import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
 import {Corgo} from "./assets/corgi/corgi.js";
 import {Tree, Small_Tree, Dead_Tree} from "./assets/tree/tree.js";
 
+
+import {element} from "./index.js";
+
 // Pull these names into this module's scope for convenience:
 const {vec, vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
 
+export let reached_goal;
 export const Rope_bridge_base = defs.Rope_bridge_base =
     class Rope_bridge_base extends Component {
         init() {
@@ -143,6 +147,8 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.t_sim = 0;
             this.running = true;
 
+            this.goal_mushroom_position = vec3(32, 6, -3);
+            reached_goal = false;
 
             //corgo animation
             this.thigh_angle = 0;
@@ -363,7 +369,7 @@ export class Rope_bridge extends Rope_bridge_base {
 
         // Mushroom island mountain
         this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(32, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
-        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(32,6,-3), this.materials.mushroomMtl);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(this.goal_mushroom_position[0],this.goal_mushroom_position[1],this.goal_mushroom_position[2]), this.materials.mushroomMtl);
 
         this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-3, 3, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
         this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-1, 0, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 1, 1, 1)), this.materials.rock);
@@ -436,7 +442,7 @@ export class Rope_bridge extends Rope_bridge_base {
         this.spline.tangents = [];
         this.spline.size = 0;
         for(let i = 0; i < plank_locations.length; i++) {
-            console.log(plank_locations[i])
+            // console.log(plank_locations[i])
             this.spline.add_point(plank_locations[i][0], plank_locations[i][1] + 1.5, plank_locations[i][2], 1, 0, 0);
         }
         // Draw spline for debugging
@@ -447,7 +453,7 @@ export class Rope_bridge extends Rope_bridge_base {
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
-        const corgo_speedup = 4.0; // To make corgo run faster
+        const corgo_speedup = 8.0; // To make corgo run faster
         if (this.running) {
             const t_next = this.t_sim + dt;
             while (this.t_sim < t_next) {
@@ -462,6 +468,16 @@ export class Rope_bridge extends Rope_bridge_base {
                 // normal update
                 this.msd.update(this.timestep)
                 this.t_sim += this.timestep;
+
+                let distance_from_goal = Math.sqrt((this.corgo.position[0] - this.goal_mushroom_position[0])**2 + (this.corgo.position[1] - this.goal_mushroom_position[1])**2 + (this.corgo.position[2] - this.goal_mushroom_position[2])**2 );
+                if(distance_from_goal < 3) {
+                    console.log("REACHED MUSHROOM!!!")
+                    reached_goal = true;
+
+                    let event = new Event('click');
+                    element.dispatchEvent(event);
+                    this.running = false;
+                }
             }
         }
 

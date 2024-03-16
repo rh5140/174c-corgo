@@ -26,8 +26,9 @@ let scenes = {1: Rope_bridge, 2: Mushroom_scene};
 const scene_selector = (i) => scenes[i];
 
 // const main_scene        = Rope_bridge; // default
-const main_scene = Mushroom_scene;
+const main_scene = Rope_bridge;
 const additional_scenes = [];
+
 
 export { additional_scenes, defs, main_scene, scene_selector };
 

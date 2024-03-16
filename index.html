@@ -28,25 +28,8 @@ index.html - The web page document containing the canvas (drawing surface).  It 
 <!-- The following code embeds a WebGL canvas panel powered by a tree of Components from tiny-graphics.  //-->
 <div id="main-section" class="document-builder"></div>
 <script src="./math.js" type="text/javascript"></script>
-<script type=module>
-// ********************* THE ENTRY POINT OF YOUR JAVASCRIPT PROGRAM STARTS HERE *********************
-// Indicate which element on the page you want the Canvas_Widget to replace with a 3D WebGL area:
-const element_to_replace = document.querySelector ("#main-section");
-import {main_scene, scene_selector, additional_scenes} from './main-scene.js';
-const root = new main_scene ();                                                     // This line creates your scene.
-root.animated_children.push (...additional_scenes.map (scene => new scene ()));
-root.render_layout (element_to_replace);
+<script src="./index.js" type=module>
 
-function select_scene(i) {
-    element_to_replace.innerHTML = "";
-    const scene = scene_selector(i);
-    const root = new scene();                                                     // This line creates your scene.
-    root.animated_children.push (...additional_scenes.map (scene => new scene ()));
-    root.render_layout (element_to_replace);
-}
-
-document.getElementById("p1").addEventListener("click", () => { select_scene(1) });
-document.getElementById("p2").addEventListener("click", () => { select_scene(2) });
 
 </script>
 
