@@ -292,7 +292,8 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 export class Rope_bridge extends Rope_bridge_base {
     render_animation(caller) {
 
-        if(!this.running)
+        // console.log("this.running: " + this.running)
+        if(!this.running) // Hacky 
             return;
 
         // Call the setup code that we left inside the base class:
@@ -482,6 +483,7 @@ export class Rope_bridge extends Rope_bridge_base {
                     let event = new Event('click');
                     element.dispatchEvent(event);
                     this.running = false;
+                    break;
 
                     //TODO: do some destruction so that webgl doesn't die when the new scene is loaded in
                 }
