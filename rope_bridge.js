@@ -26,6 +26,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 'plank': new Shape_From_File("assets/plank.obj"),
                 'mountain': new Shape_From_File("assets/mountain.obj"),
                 'rocks': new Shape_From_File("assets/tree/Icosphere.obj"),
+                'mushroom': new Shape_From_File("assets/mushroom.obj"),
             };
 
             // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -97,6 +98,14 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 color: color(1.0, 1.0, 1.0, 1.0),
                 texture: new Texture("assets/water.jpg")
             }
+            this.materials.mushroomMtl = {
+                shader: tex_phong,
+                ambient: .2,
+                diffusivity: 1,
+                specularity: 0,
+                color: color(1, 1, 1, 1),
+                texture: new Texture("assets/mushroom.png")
+            }
 
             this.audio = {
                 wind: new Audio(),
@@ -121,9 +130,13 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             // Bouncing object
             this.msd = new Mass_Spring_Damper();
 
+            this.particle_index = 0;
+            this.spring_index = 0;
+            // Create the first bridge (the long one)
+            this.create_rope_bridge(-1, 5, -1, 20);
 
-            this.create_rope_bridge();
-
+            // Create the second bridge
+            this.create_rope_bridge(20, 5, -1, 12);
 
 
             this.timestep = 1 / 1000;
@@ -142,30 +155,30 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.tail_forward = true;
         }
 
-        create_rope_bridge() {
+        create_rope_bridge(x, y, z, bridge_length) { // (x, y, z) is the start point of the bridge
             const ks = 5000;
             const kd = 200;
             const length = 1;
 
             // Horrible block of duplicated code
-            const particles_in_rope = 20; // How many particles are in a single rope
+            const particles_in_rope = bridge_length; // How many particles are in a single rope
             const springs_in_rope = particles_in_rope - 1; // How many springs are in a single rope
-            let particle_index = 0;
-            let spring_index = 0;
+            let starting_particle_index = this.particle_index;
+            let starting_spring_index = this.spring_index;
 
             // Create one rope of the floor of the rope bridge
-            this.create_rope(particles_in_rope, particle_index, 0, 0, 0);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, 0);
 
-            this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length);
-            particle_index += particles_in_rope;
-            spring_index += springs_in_rope;
+            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, length);
+            this.particle_index += particles_in_rope;
+            this.spring_index += springs_in_rope;
 
 
             // Create the other rope on the floor of the rope bridge
-            this.create_rope(particles_in_rope, particle_index, 0, 0, -2);
-            this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length)
-            particle_index += particles_in_rope;
-            spring_index += springs_in_rope;
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, -2);
+            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, length)
+            this.particle_index += particles_in_rope;
+            this.spring_index += springs_in_rope;
 
 
             // Springs for planks
@@ -174,23 +187,23 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             const plank_length = 2;
             this.msd.create_springs(particles_in_rope); // There are as many planks as particles in a single rope
             for(let i = 0 ; i < particles_in_rope; i++) {
-                this.msd.springs[spring_index + i].connect(this.msd.particles[0 + i], this.msd.particles[particles_in_rope + i], plank_ks, plank_kd, plank_length);
-                this.msd.springs[spring_index + i].is_plank = true;
+                this.msd.springs[this.spring_index + i].connect(this.msd.particles[starting_particle_index + i], this.msd.particles[starting_particle_index + particles_in_rope + i], plank_ks, plank_kd, plank_length);
+                this.msd.springs[this.spring_index + i].is_plank = true;
             }
-            spring_index += particles_in_rope;
+            this.spring_index += particles_in_rope;
 
             // Add railings
             const railing_height = 2;
-            this.create_rope(particles_in_rope, particle_index, 0, railing_height, 0);
-            // console.log("spring index: " + spring_index)
-            this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length);
-            particle_index += particles_in_rope;
-            spring_index += springs_in_rope;
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, 0);
+            // console.log("spring index: " + this.spring_index)
+            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, length);
+            this.particle_index += particles_in_rope;
+            this.spring_index += springs_in_rope;
 
-            this.create_rope(particles_in_rope, particle_index, 0, railing_height, -2);
-            this.create_springs_for_rope(springs_in_rope, spring_index, particle_index, ks, kd, length);
-            particle_index += particles_in_rope;
-            spring_index += springs_in_rope;
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, -2);
+            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, length);
+            this.particle_index += particles_in_rope;
+            this.spring_index += springs_in_rope;
 
             // Add ropes to connect the railings and the bottom ropes on the bridge
             const railing_ks = 5000;
@@ -198,22 +211,23 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             const railing_length = 1.75;
             this.msd.create_springs(particles_in_rope * 2);
             for(let i = 0; i < particles_in_rope * 2 ; i++) {
-                this.msd.springs[spring_index + i].connect(this.msd.particles[i], this.msd.particles[particles_in_rope * 2 + i], railing_ks, railing_kd, railing_length);
+                this.msd.springs[this.spring_index + i].connect(this.msd.particles[starting_particle_index + i], this.msd.particles[starting_particle_index + particles_in_rope * 2 + i], railing_ks, railing_kd, railing_length);
             }
+            this.spring_index += particles_in_rope * 2;
 
 
         }
 
-        create_rope(num, start_index, x_offset, y_offset, z_offset) {
+        create_rope(num, start_index, x, y, z, x_offset, y_offset, z_offset) {
             this.msd.create_particles(num);
             this.msd.particles[start_index].top =  true;
             this.msd.particles[start_index + num - 1].top =  true;
 
             for(let i = 0; i < num; i++) {
                 // NOTE: hardcoded the starting points of the ropes here
-                let x = -1;
-                let y = 5;
-                let z = -1;
+                // let x = -1;
+                // let y = 5;
+                // let z = -1;
                 let vx = 0;
                 let vy = 5;
                 let vz = 0;
@@ -230,7 +244,6 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
                 this.msd.particles[start_index + i].set_properties(1, x + i + x_offset, y + y_offset, z + z_offset, vx, vy, vz);
             }
-
 
 
         }
@@ -253,7 +266,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
         }
 
         render_animation(caller) {
-            Shader.assign_camera(Mat4.look_at(vec3(25, 10, 5), vec3(-200, -100, -100), vec3(0, 1, 0)), this.uniforms);
+            Shader.assign_camera(Mat4.look_at(vec3(50,25, 25), vec3(-200, -100, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -313,6 +326,12 @@ export class Rope_bridge extends Rope_bridge_base {
         // Giant trees
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(5, 2, 8).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(25, 2, 6).times(Mat4.scale(3, 3, 3)));
+        // // Giant kelp
+        // this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 4, 3)));
+        // this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, 0).times(Mat4.rotation(Math.PI / 6 , 1, 0, 1)).times(Mat4.scale(3, 7, 3)));
+        // this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(5, 2, 8).times(Mat4.rotation(Math.PI / 6 , 0, 1, 1)).times(Mat4.scale(3, 10, 3)));
 
         this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-20, 5, 10).times(Mat4.scale(2, 2, 2)), {...this.materials.cloud, color: white});
         this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(5, 3, -15).times(Mat4.scale(3, 3, 3)), this.materials.cloud);
@@ -341,6 +360,10 @@ export class Rope_bridge extends Rope_bridge_base {
 
 
         this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(15, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
+
+        // Mushroom island mountain
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(32, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
+        this.shapes.mushroom.draw(caller, this.uniforms,  Mat4.translation(32,6,-3), this.materials.mushroomMtl);
 
         this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-3, 3, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
         this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-1, 0, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 1, 1, 1)), this.materials.rock);
