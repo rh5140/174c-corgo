@@ -74,7 +74,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 diffusivity: 1.0,
                 specularity: 0.0,
                 color: color(.7, 0.7, .5, 1.0),
-                texture: new Texture("assets/rock.jpg", "LINEAR_MIPMAP_LINEAR")
+                texture: new Texture("assets/rock256_lighter.jpg", "LINEAR_MIPMAP_LINEAR")
             }
             this.materials.rock = {
                 shader: tex_phong,
@@ -82,7 +82,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 diffusivity: 1.0,
                 specularity: 0.0,
                 color: color(.5, .5, .5, 1.0),
-                texture: new Texture("assets/rock.jpg", "LINEAR_MIPMAP_LINEAR")
+                texture: new Texture("assets/rock256.jpg", "LINEAR_MIPMAP_LINEAR")
             }
             this.materials.cloud = {
                 shader: phong,
