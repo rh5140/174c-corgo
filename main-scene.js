@@ -6,7 +6,7 @@ import { Transforms_Sandbox, Transforms_Sandbox_Base } from "./examples/transfor
 const Minimal_Webgl_Demo = defs.Minimal_Webgl_Demo;
 import { Corgo_collision } from "./corgo_collision.js";
 import { Rope_bridge } from "./rope_bridge.js";
-import {Part_one_hermite} from "./mushroom_scene.js";
+import {Mushroom_scene} from "./mushroom_scene.js";
 
 Object.assign (defs,
     {Minimal_Webgl_Demo},
@@ -19,7 +19,7 @@ Object.assign (defs,
 
 // ******************** SELECT THE DEMO TO DISPLAY:
 
-let scenes = {1: Rope_bridge};
+let scenes = {1: Rope_bridge, 2: Mushroom_scene};
 const scene_selector = (i) => scenes[i];
 
 const main_scene        = Rope_bridge; // default
