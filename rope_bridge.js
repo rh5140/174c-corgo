@@ -98,6 +98,11 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 texture: new Texture("assets/water.jpg")
             }
 
+            this.audio = {
+                wind: new Audio(),
+            }
+            this.audio.wind.src = "assets/audio/ropebridge/wind.mp3";
+
 
             // Spline
             this.spline = new Hermite_Spline();
@@ -278,6 +283,8 @@ export class Rope_bridge extends Rope_bridge_base {
 
         const light_blue = color(0, 0.3, 0.7, 1);
 
+        this.audio.wind.play();
+
         // !!! Draw ground
         // TRANSLATED DOWN 3
         let floor_transform = Mat4.translation(0, -3, 0).times(Mat4.scale(100, 0.01, 100));
@@ -303,10 +310,9 @@ export class Rope_bridge extends Rope_bridge_base {
         this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(33, 5, 5).times(Mat4.rotation(Math.PI / 4, 1, 1, 1)));
 
 
-        // Giant kelp
-        this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 4, 3)));
-        this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, 0).times(Mat4.rotation(Math.PI / 6 , 1, 0, 1)).times(Mat4.scale(3, 7, 3)));
-        this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(5, 2, 8).times(Mat4.rotation(Math.PI / 6 , 0, 1, 1)).times(Mat4.scale(3, 10, 3)));
+        // Giant trees
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
 
         this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-20, 5, 10).times(Mat4.scale(2, 2, 2)), {...this.materials.cloud, color: white});
         this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(5, 3, -15).times(Mat4.scale(3, 3, 3)), this.materials.cloud);
