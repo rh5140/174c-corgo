@@ -7,6 +7,7 @@ const Minimal_Webgl_Demo = defs.Minimal_Webgl_Demo;
 import { Corgo_collision } from "./corgo_collision.js";
 import { Rope_bridge } from "./rope_bridge.js";
 import {Part_one_hermite} from "./mushroom_scene.js";
+import {Liquid_Scene} from "./liquid_scene.js";
 
 Object.assign (defs,
     {Minimal_Webgl_Demo},
