@@ -141,7 +141,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.create_rope_bridge(-1, 5, -1, 19, 8, 19);
 
             // Create the second bridge
-            // this.create_rope_bridge(20, 5, -1, 12);
+            this.create_rope_bridge(20, 9, 20, 32, 6, -3);
 
 
             this.timestep = 1 / 1000;
@@ -163,32 +163,34 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.tail_forward = true;
         }
 
-        create_rope_bridge(x, y, z, end_x, end_y, end_z) { // (x, y, z) is the start point of the bridge
+        create_rope_bridge(x, y, z, end_x, end_y, end_z) { // (x, y, z) is the start point of the bridge, (end_x, end_y, end_z) is the end point 
             const ks = 5000;
             const kd = 200;
-            const length = 1; // natural length of springs in rope
+            const natural_rope_length = 1; // natural length of springs in rope
 
             const bridge_distance = Math.sqrt((end_x - x)**2 + (end_y - y)**2 + (end_z - z)**2 );
             console.log("bridge is " + bridge_distance + " units long")
             console.log("this.rope_segment_length: " + this.rope_segment_length)
             const particles_in_rope = Math.ceil(bridge_distance / this.rope_segment_length); // How many particles are in a single rope
             console.log(particles_in_rope + " particles in rope")
-            // const particles_in_rope = bridge_length; // How many particles are in a single rope
+            let delta_x = (end_x - x) / particles_in_rope; // the x-distance between each particle in the rope
+            let delta_y = (end_y - y) / particles_in_rope; // the y-distance ""             ""
+            let delta_z = (end_z - z) / particles_in_rope; // the z-distance ""             ""
             const springs_in_rope = particles_in_rope - 1; // How many springs are in a single rope
             let starting_particle_index = this.particle_index;
             let starting_spring_index = this.spring_index;
 
             // Create one rope of the floor of the rope bridge
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, 0);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, 0, delta_x, delta_y, delta_z);
 
-            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, length);
+            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
 
 
             // Create the other rope on the floor of the rope bridge
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, -2);
-            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, length)
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, -2, delta_x, delta_y, delta_z);
+            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length)
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
 
@@ -206,14 +208,14 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             // Add railings
             const railing_height = 2;
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, 0);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, 0, delta_x, delta_y, delta_z);
             // console.log("spring index: " + this.spring_index)
-            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, length);
+            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
 
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, -2);
-            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, length);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, -2, delta_x, delta_y, delta_z);
+            this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
 
@@ -230,7 +232,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
         }
 
-        create_rope(num, start_index, x, y, z, x_offset, y_offset, z_offset) {
+        create_rope(num, start_index, x, y, z, x_offset, y_offset, z_offset, delta_x, delta_y, delta_z) {
             const distance_between_particles = 1;
 
             this.msd.create_particles(num);
@@ -245,14 +247,13 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 if(i === 0)
                     vy = 0;
 
-                else if(i === 1 || i === 2) {
-                    z = -0.1;
+                else if(i === 1 || i === 2) { // Tiny perturbation to make the movement of the bridge more interesting
+                    z += -0.1;
                 }
-                // else if(i === 3)
-                //     x_offset -= 1; // more magic numbers to get the movement i want
 
 
-                this.msd.particles[start_index + i].set_properties(1, x + i + x_offset, y + y_offset, z + z_offset, vx, vy, vz);
+
+                this.msd.particles[start_index + i].set_properties(1, x + (i * delta_x) + x_offset, y + (i * delta_y) + y_offset, z + (i * delta_z) + z_offset, vx, vy, vz);
             }
 
 
@@ -324,6 +325,7 @@ export class Rope_bridge extends Rope_bridge_base {
 
         // Draw random mushroom for debugging
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(19, 8, 19), this.materials.mushroomMtl);
+        // this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(6, 5, -15), this.materials.mushroomMtl);
 
 
         // Draw Cube Corgo
