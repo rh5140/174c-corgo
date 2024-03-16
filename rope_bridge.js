@@ -3,7 +3,7 @@ import {Shape_From_File} from "./examples/obj-file-demo.js";
 import {Mass_Spring_Damper} from "./lib/particle_system.js";
 import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
 import {Corgo} from "./assets/corgi/corgi.js";
-import {Tree} from "./assets/tree/tree.js";
+import {Tree, Small_Tree, Dead_Tree} from "./assets/tree/tree.js";
 
 // Pull these names into this module's scope for convenience:
 const {vec, vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
@@ -20,6 +20,8 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 'ball': new defs.Subdivision_Sphere(4),
                 'axis': new defs.Axis_Arrows(),
                 'tree': new Tree(),
+                'small_tree': new Small_Tree(0.5),
+                'dead_tree': new Dead_Tree(),
                 'cloud': new Shape_From_File("assets/cloud.obj"),
                 'plank': new Shape_From_File("assets/plank.obj"),
                 'mountain': new Shape_From_File("assets/mountain.obj"),
@@ -68,7 +70,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 ambient: 0.5,
                 diffusivity: 1.0,
                 specularity: 0.0,
-                color: color(.7, 1.0, .5, 1.0),
+                color: color(.7, 0.7, .5, 1.0),
                 texture: new Texture("assets/rock.jpg", "LINEAR_MIPMAP_LINEAR")
             }
             this.materials.rock = {
@@ -78,6 +80,22 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 specularity: 0.0,
                 color: color(.5, .5, .5, 1.0),
                 texture: new Texture("assets/rock.jpg", "LINEAR_MIPMAP_LINEAR")
+            }
+            this.materials.cloud = {
+                shader: phong,
+                ambient: 0.5,
+                diffusivity: 1.0,
+                specularity: 0.0,
+                color: color(1.0, 1.0, 1.0, 0.6),
+                // texture: new Texture("assets/rock.jpg", "LINEAR_MIPMAP_LINEAR")
+            }
+            this.materials.water = {
+                shader: tex_phong,
+                ambient: 0.8,
+                diffusivity: 0.0,
+                specularity: 1.0,
+                color: color(1.0, 1.0, 1.0, 1.0),
+                texture: new Texture("assets/water.jpg")
             }
 
 
@@ -258,54 +276,74 @@ export class Rope_bridge extends Rope_bridge_base {
 
         const t = this.t = this.uniforms.animation_time / 1000;
 
+        const light_blue = color(0, 0.3, 0.7, 1);
+
         // !!! Draw ground
         // TRANSLATED DOWN 3
         let floor_transform = Mat4.translation(0, -3, 0).times(Mat4.scale(100, 0.01, 100));
-        this.shapes.box.draw(caller, this.uniforms, floor_transform, {
-            ...this.materials.plastic,
-            color: color(2 / 255, 48 / 255, 32 / 255, 1)
-        });
+
+        this.shapes.box.draw(caller, this.uniforms, floor_transform, this.materials.water);
 
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
 
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(0.5, 0.5, 0.5)));
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
+        // this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-10, 2, 0).times(Mat4.scale(0.5, 0.5, 0.5)));
+        this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(0, 3, 3).times(Mat4.scale(1, 1, 1)));
 
-        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-20, 10, 10).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(1, 1, 1, 1)
-        });
-        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(0, 10, -30).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(1, 1, 1, 1)
-        });
-        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-25, 10, -25).times(Mat4.scale(3, 3, 3)), {
-            ...this.materials.plastic,
-            color: color(1, 1, 1, 1)
-        });
+        this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(10, 3, 2).times(Mat4.rotation(Math.PI / 4, 0, 0, 1)));
 
-        // // Draw "cliffs"
-        // // Try to downsample texture
-        // let texture2_coord = this.shapes.mountain.arrays.texture_coord;
-        // for (let i = 0; i < texture2_coord.length; i++) {
-        //     let new_coord = vec(texture2_coord[i][0] * 2, texture2_coord[i][1] * 2); // Zoom out on each axis (so the texture appears multiple times on each face)
-        //     this.shapes.mountain.arrays.texture_coord[i] = new_coord;
-        // }
-        // this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(-2, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
-        //
-        //
-        // this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(15, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
-        //
-        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-3, 3, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
-        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-1, 0, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 1, 1, 1)), this.materials.rock);
-        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(6, 0, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
-        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(3, -1, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
-        //
-        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 2, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
-        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 0, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
-        // this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(17, 1, 0).times(Mat4.scale(2, 2, 2)), this.materials.rock);
+        this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(10, 3, -8).times(Mat4.rotation(-Math.PI / 4, 1, 1, 1)));
+
+        this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(0, 0, 5));
+        this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(2, 0, 6));
+        this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(10, 0, 6).times(Mat4.rotation(Math.PI / 8, 1, 1, 1)));
+        this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(20, 0, 0));
+
+
+        this.shapes.small_tree.draw(caller, this.uniforms, Mat4.translation(33, 5, 5).times(Mat4.rotation(Math.PI / 4, 1, 1, 1)));
+
+
+        // Giant kelp
+        this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 4, 3)));
+        this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, 0).times(Mat4.rotation(Math.PI / 6 , 1, 0, 1)).times(Mat4.scale(3, 7, 3)));
+        this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(5, 2, 8).times(Mat4.rotation(Math.PI / 6 , 0, 1, 1)).times(Mat4.scale(3, 10, 3)));
+
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-20, 5, 10).times(Mat4.scale(2, 2, 2)), {...this.materials.cloud, color: white});
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(5, 3, -15).times(Mat4.scale(3, 3, 3)), this.materials.cloud);
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(-25, 5, -25).times(Mat4.scale(3, 3, 3)), {...this.materials.cloud, color: white});
+
+
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(5, 4, 3).times(Mat4.scale(0.8, 0.8, 0.8)), this.materials.cloud);
+
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(15, 4, 5).times(Mat4.rotation(Math.PI / 2, 0, 0, 1)).times(Mat4.scale(1, 1, 1)), this.materials.cloud);
+
+
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(8, 4, -5).times(Mat4.scale(0.8, 0.8, 0.8)), this.materials.cloud);
+
+        // this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(9, 3.5, 3).times(Mat4.scale(5, 1, 2)), this.materials.cloud);
+
+        this.shapes.cloud.draw(caller, this.uniforms, Mat4.translation(17, 3.5, 5).times(Mat4.rotation(Math.PI / 4 , 0, 0, 1)).times(Mat4.scale(2, 2, 2)), this.materials.cloud);
+
+        // Draw "cliffs"
+        // Try to downsample texture
+        let texture2_coord = this.shapes.mountain.arrays.texture_coord;
+        for (let i = 0; i < texture2_coord.length; i++) {
+            let new_coord = vec(texture2_coord[i][0] * 2, texture2_coord[i][1] * 2); // Zoom out on each axis (so the texture appears multiple times on each face)
+            this.shapes.mountain.arrays.texture_coord[i] = new_coord;
+        }
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(-2, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
+
+
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(15, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
+
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-3, 3, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(-1, 0, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 1, 1, 1)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(6, 0, -3).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(3, -1, 0).times(Mat4.scale(2, 2, 2)).times(Mat4.rotation(Math.PI , 0, 0, 1)), this.materials.rock);
+
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 2, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(18, 0, -3).times(Mat4.scale(2, 2, 2)), this.materials.rock);
+        this.shapes.rocks.draw(caller, this.uniforms, Mat4.translation(17, 1, 0).times(Mat4.scale(2, 2, 2)), this.materials.rock);
 
 
         // Draw chain (now a rope)
@@ -364,8 +402,7 @@ export class Rope_bridge extends Rope_bridge_base {
         }
 
         //reset the spline to the new locations of the planks....
-        // not working yet
-        // Reset all points in the spline :(
+        // Inefficiently reset all points in the spline :(
         this.spline.points = [];
         this.spline.tangents = [];
         this.spline.size = 0;
