@@ -239,7 +239,7 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
     }
 
 
-export class Corgo_collision extends Corgo_collision_base {                                                    // **Part_one_hermite** is a Scene object that can be added to any display canvas.
+export class FlowerDanceScene extends Corgo_collision_base {                                                    // **Part_one_hermite** is a Scene object that can be added to any display canvas.
                                                                                                                // This particular scene is broken up into two pieces for easier understanding.
                                                                                                                // See the other piece, My_Demo_Base, if you need to see the setup code.
                                                                                                                // The piece here exposes only the display() method, which actually places and draws
