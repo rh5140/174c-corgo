@@ -144,8 +144,8 @@ export class Liquid_Scene extends Component{
 
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(0, 7.5, -15).times(Mat4.rotation(-math.PI/2, 0, 1, 1)).times(Mat4.scale(1,1,1)), this.materials.mushroom)
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-13, 5, -2).times(Mat4.rotation(math.PI/2.4, 1    , 1, 0)).times(Mat4.scale(1.5,1.5,1.5)), this.materials.mushroom)
-        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-10, 0.7, 5).times(Mat4.scale(.8,.8,.8)), this.materials.mushroom)
-        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-11, 1, 6).times(Mat4.scale(1,1,1)), this.materials.mushroom)
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-10, 0.7, 5).times(Mat4.rotation(math.PI/2.4, 0    , 1, 0)).times(Mat4.scale(.8,.8,.8)), this.materials.mushroom)
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-11, 1, 6).times(Mat4.rotation(math.PI/1.2, 0    , 1, 0)).times(Mat4.scale(1,1,1)), this.materials.mushroom)
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-12, 1.3, 4).times(Mat4.scale(1.2,1.2,1.2)), this.materials.mushroom)
     }
 }
