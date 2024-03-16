@@ -134,11 +134,14 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             this.particle_index = 0;
             this.spring_index = 0;
+            this.rope_segment_length = 1.0; // Distance between particles in a rope
+
             // Create the first bridge (the long one)
-            this.create_rope_bridge(-1, 5, -1, 20);
+            // this.create_rope_bridge(-1, 5, -1, 20);
+            this.create_rope_bridge(-1, 5, -1, 19, 8, 19);
 
             // Create the second bridge
-            this.create_rope_bridge(20, 5, -1, 12);
+            // this.create_rope_bridge(20, 5, -1, 12);
 
 
             this.timestep = 1 / 1000;
@@ -147,6 +150,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             this.goal_mushroom_position = vec3(32, 6, -3);
             reached_goal = false;
+
 
             //corgo animation
             this.thigh_angle = 0;
@@ -159,13 +163,17 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.tail_forward = true;
         }
 
-        create_rope_bridge(x, y, z, bridge_length) { // (x, y, z) is the start point of the bridge
+        create_rope_bridge(x, y, z, end_x, end_y, end_z) { // (x, y, z) is the start point of the bridge
             const ks = 5000;
             const kd = 200;
-            const length = 1;
+            const length = 1; // natural length of springs in rope
 
-            // Horrible block of duplicated code
-            const particles_in_rope = bridge_length; // How many particles are in a single rope
+            const bridge_distance = Math.sqrt((end_x - x)**2 + (end_y - y)**2 + (end_z - z)**2 );
+            console.log("bridge is " + bridge_distance + " units long")
+            console.log("this.rope_segment_length: " + this.rope_segment_length)
+            const particles_in_rope = Math.ceil(bridge_distance / this.rope_segment_length); // How many particles are in a single rope
+            console.log(particles_in_rope + " particles in rope")
+            // const particles_in_rope = bridge_length; // How many particles are in a single rope
             const springs_in_rope = particles_in_rope - 1; // How many springs are in a single rope
             let starting_particle_index = this.particle_index;
             let starting_spring_index = this.spring_index;
@@ -223,15 +231,13 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
         }
 
         create_rope(num, start_index, x, y, z, x_offset, y_offset, z_offset) {
+            const distance_between_particles = 1;
+
             this.msd.create_particles(num);
             this.msd.particles[start_index].top =  true;
             this.msd.particles[start_index + num - 1].top =  true;
 
             for(let i = 0; i < num; i++) {
-                // NOTE: hardcoded the starting points of the ropes here
-                // let x = -1;
-                // let y = 5;
-                // let z = -1;
                 let vx = 0;
                 let vy = 5;
                 let vz = 0;
@@ -315,6 +321,10 @@ export class Rope_bridge extends Rope_bridge_base {
         let floor_transform = Mat4.translation(0, -3, 0).times(Mat4.scale(100, 0.01, 100));
 
         this.shapes.box.draw(caller, this.uniforms, floor_transform, this.materials.water);
+
+        // Draw random mushroom for debugging
+        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(19, 8, 19), this.materials.mushroomMtl);
+
 
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
