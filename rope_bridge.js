@@ -135,6 +135,30 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             this.tail_angle = 0;
             this.tail_forward = true;
+
+
+            //cam spline
+            this.spline_cam = new Hermite_Spline();
+
+            /*
+            this.spline_cam.add_point(5, 5, -5, -30.0, 0.0, 30.0);
+            this.spline_cam.add_point(5, 5, 0, 30.0, 0.0, 30.0);
+            this.spline_cam.add_point(15, 5, 0, 30.0, 0.0, -30.0);
+            this.spline_cam.add_point(15, 5, -5, -30.0, 0.0, -30.0);
+            this.spline_cam.add_point(5, 5, -5, -30.0, 0.0, 30.0);
+            */
+            this.spline_cam.add_point(20, 15, -5, 10, 0, 0);
+            this.spline_cam.add_point(25, 15, 0, 0, 0, 10);
+            this.spline_cam.add_point(20, 15, 5, -10, 0, 0);
+            this.spline_cam.add_point(25, 16, 0, 0, 0, -10);
+            this.spline_cam.add_point(20, 15, -5, 10, 0, 0);
+
+            const curve_fn_spline = (t, i_0, i_1) => this.spline_cam.get_position(t, i_0, i_1);
+            this.curve_cam = new Curve_Shape(curve_fn_spline, this.sample_cnt, this.spline_cam.size);
+
+
+
+
         }
 
         create_rope_bridge() {
@@ -248,7 +272,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
         }
 
         render_animation(caller) {
-            Shader.assign_camera(Mat4.look_at(vec3(25, 10, 5), vec3(-200, -100, -100), vec3(0, 1, 0)), this.uniforms);
+            //Shader.assign_camera(Mat4.look_at(vec3(35, 10, 5), vec3(-200, -100, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -407,7 +431,7 @@ export class Rope_bridge extends Rope_bridge_base {
         this.spline.tangents = [];
         this.spline.size = 0;
         for(let i = 0; i < plank_locations.length; i++) {
-            console.log(plank_locations[i])
+            //console.log(plank_locations[i])
             this.spline.add_point(plank_locations[i][0], plank_locations[i][1] + 1.5, plank_locations[i][2], 1, 0, 0);
         }
         // Draw spline for debugging
@@ -416,9 +440,14 @@ export class Rope_bridge extends Rope_bridge_base {
         // this.curve = new Curve_Shape(curve_fn, this.sample_cnt, this.spline.size);
         // this.curve.draw(caller, this.uniforms);
 
+
+        //cam spline draw (debug)
+        this.curve_cam.draw(caller, this.uniforms);
+
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
         const corgo_speedup = 4.0; // To make corgo run faster
+        const cam_speed = 0.2
         if (this.running) {
             const t_next = this.t_sim + dt;
             while (this.t_sim < t_next) {
@@ -429,6 +458,13 @@ export class Rope_bridge extends Rope_bridge_base {
                 this.corgo.position = this.spline.get_position(iter, idx, idx + 1);
                 this.corgo.velocity = this.spline.get_velocity(iter, idx, idx + 1);
                 this.corgo.acceleration = this.spline.get_velocity(iter, idx, idx + 1);
+
+                //camera anim
+                num_points = this.spline_cam.size - 1;
+                idx = Math.floor((this.t_sim * cam_speed) % num_points);
+                iter = (this.t_sim * cam_speed) % 1.0;
+            
+                Shader.assign_camera(Mat4.look_at(this.spline_cam.get_position(iter, idx, idx + 1), this.corgo.position, vec3(0, 1, 0)), this.uniforms);
 
                 // normal update
                 this.msd.update(this.timestep)
