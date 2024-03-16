@@ -17,9 +17,11 @@ function select_scene(i) {
 }
 
 
-element = document.getElementById("p2");
-// let event = new Event('click');
-// element.dispatchEvent(event);
+
 
 document.getElementById("p1").addEventListener("click", () => { select_scene(1) });
 document.getElementById("p2").addEventListener("click", () => { select_scene(2) });
+
+element = document.getElementById("p2");
+// let event = new Event('click');
+// element.dispatchEvent(event);

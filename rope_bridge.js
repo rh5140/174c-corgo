@@ -15,7 +15,7 @@ export let reached_goal;
 export const Rope_bridge_base = defs.Rope_bridge_base =
     class Rope_bridge_base extends Component {
         init() {
-            console.log("init")
+            console.log("init rope bridge scene")
 
             this.hover = this.swarm = false;
 
@@ -292,8 +292,13 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 export class Rope_bridge extends Rope_bridge_base {
     render_animation(caller) {
 
+        if(!this.running)
+            return;
+
         // Call the setup code that we left inside the base class:
         super.render_animation(caller);
+
+
 
         const blue = color(0, 0, 1, 1), yellow = color(0.7, 1, 0, 1), red = color(1, 0, 0, 1),
             black = color(0, 0, 0, 1), white = color(1, 1, 1, 1), tan = color(.9, .9, .9, 1.0);
@@ -477,6 +482,8 @@ export class Rope_bridge extends Rope_bridge_base {
                     let event = new Event('click');
                     element.dispatchEvent(event);
                     this.running = false;
+
+                    //TODO: do some destruction so that webgl doesn't die when the new scene is loaded in
                 }
             }
         }

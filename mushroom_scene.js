@@ -17,7 +17,7 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
                                                                                             // exposes only the display() method, which actually places and draws the shapes,
                                                                                             // isolating that code so it can be experimented with on its own.
         init() {
-            console.log("init")
+            console.log("init mushroom scene")
 
             // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
             this.hover = this.swarm = false;
