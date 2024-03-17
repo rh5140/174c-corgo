@@ -137,10 +137,14 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             // Create the first bridge (the long one)
             // this.create_rope_bridge(-1, 5, -1, 20);
-            this.create_rope_bridge(-1, 5, -1, 19, 8, 19);
+            this.create_rope_bridge(-1, 3, -1, 19, 2.5, 19);
 
             // Create the second bridge
-            this.create_rope_bridge(20, 9, 20, 32, 6, -3);
+            this.create_rope_bridge(20, 2.5, 18, 32, 6, -3);
+
+            this.create_rope_bridge(32, 6, -3, 20, 2.5, -18);
+
+            this.create_rope_bridge(17, 2.5, -18, 1, 3, -4);
 
 
             this.timestep = 1 / 1000;
@@ -180,10 +184,6 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             const curve_fn_spline = (t, i_0, i_1) => this.spline_cam.get_position(t, i_0, i_1);
             this.curve_cam = new Curve_Shape(curve_fn_spline, this.sample_cnt, this.spline_cam.size);
-
-
-
-
         }
 
         create_rope_bridge(x, y, z, end_x, end_y, end_z) { // (x, y, z) is the start point of the bridge, (end_x, end_y, end_z) is the end point 
@@ -203,8 +203,23 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             let starting_particle_index = this.particle_index;
             let starting_spring_index = this.spring_index;
 
+            console.log("start point: (" + x + ", " + y + ", " + z + ")   End point: (" + end_x + ", " + end_y + ", " + end_z + ")");
+            let alpha = Math.atan((end_x - x)/ (end_z - z)); // returns angle in radians
+            alpha = Math.abs(alpha);
+            let x_offset = Math.abs(Math.cos(alpha) * 2);
+            // if(end_x - x > 0)
+            //     x_offset *= -1;
+            let z_offset = Math.abs( Math.sin(alpha) * 2);
+            if(end_z - z > 0)
+                z_offset *= -1;
+            console.log("alpha: " + alpha)
+            console.log("x_offset: " + x_offset + ", z_offset: " + z_offset)
+            // let x_offset = 0;
+            // let z_offset = 2;
+
+            const offset = vec3(end_x, end_y, end_z).minus(vec3(x, y, z)).normalized().cross(vec3(0, 1, 0))
             // Create one rope of the floor of the rope bridge
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, 0, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, -offset[0], 0, -offset[2], delta_x, delta_y, delta_z);
 
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
@@ -212,7 +227,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
 
             // Create the other rope on the floor of the rope bridge
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, -2, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, offset[0], 0, offset[2], delta_x, delta_y, delta_z);
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length)
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
@@ -222,6 +237,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             const plank_ks = 5000;
             const plank_kd = 500;
             const plank_length = 2;
+            console.log("Bridge plank indices: " + this.spring_index + " to " + (this.spring_index + particles_in_rope))
             this.msd.create_springs(particles_in_rope); // There are as many planks as particles in a single rope
             for(let i = 0 ; i < particles_in_rope; i++) {
                 this.msd.springs[this.spring_index + i].connect(this.msd.particles[starting_particle_index + i], this.msd.particles[starting_particle_index + particles_in_rope + i], plank_ks, plank_kd, plank_length);
@@ -231,13 +247,13 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             // Add railings
             const railing_height = 2;
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, 0, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, -offset[0], railing_height, -offset[2], delta_x, delta_y, delta_z);
             // console.log("spring index: " + this.spring_index)
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
 
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, -2, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, offset[0], railing_height, offset[2], delta_x, delta_y, delta_z);
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
@@ -270,14 +286,16 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 if(i === 0)
                     vy = 0;
 
-                else if(i === 1 || i === 2) { // Tiny perturbation to make the movement of the bridge more interesting
-                    z += -0.1;
-                }
+                // else if(i === 1 || i === 2) { // Tiny perturbation to make the movement of the bridge more interesting
+                //     z += -0.1;
+                // }
 
 
 
                 this.msd.particles[start_index + i].set_properties(1, x + (i * delta_x) + x_offset, y + (i * delta_y) + y_offset, z + (i * delta_z) + z_offset, vx, vy, vz);
             }
+
+            console.log("Location of top particles: first " + this.msd.particles[start_index].position + " and last " + this.msd.particles[start_index + num - 1].position)
 
 
         }
@@ -300,7 +318,12 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
         }
 
         render_animation(caller) {
-            if(!this.running) return
+            if (!this.running) return
+            // if (!caller.controls) {
+            //     this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
+            //     caller.controls.add_mouse_controls(caller.canvas);
+            //     Shader.assign_camera(Mat4.look_at(vec3(50,25, 25), vec3(-200, -100, -100), vec3(0, 1, 0)), this.uniforms);
+            // }
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -343,10 +366,6 @@ export class Rope_bridge extends Rope_bridge_base {
 
         this.shapes.box.draw(caller, this.uniforms, floor_transform, this.materials.water);
 
-        // Draw random mushroom for debugging
-        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(19, 8, 19), this.materials.mushroomMtl);
-        // this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(6, 5, -15), this.materials.mushroomMtl);
-
 
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
@@ -371,7 +390,7 @@ export class Rope_bridge extends Rope_bridge_base {
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(5, 2, 8).times(Mat4.scale(3, 3, 3)));
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(25, 2, 6).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(32, 2, 12).times(Mat4.scale(3, 3, 3)));
         // // Giant kelp
         // this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 4, 3)));
         // this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, 0).times(Mat4.rotation(Math.PI / 6 , 1, 0, 1)).times(Mat4.scale(3, 7, 3)));
@@ -404,6 +423,12 @@ export class Rope_bridge extends Rope_bridge_base {
 
 
         this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(15, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
+
+        // Draw random mushroom for debugging
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(19, 0, 19).times(Mat4.scale(5, 4, 3)), this.materials.mountainside);
+
+        // Draw random mushroom for debugging
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(19, 0, -19).times(Mat4.scale(5, 4, 3)), this.materials.mountainside);
 
         // Mushroom island mountain
         this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(32, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
@@ -463,16 +488,21 @@ export class Rope_bridge extends Rope_bridge_base {
                 else {
                     plank_locations.push(center); // For the new spline
 
+                    let points_dir = p2.minus(p1)
+                    let forward = points_dir.cross(vec3(0, 1, 0)).normalized()
+                    let angle = math.atan2(vec(0,0,1).cross(forward).dot(vec3(0, 1, 0)), vec(0,0,1).dot(forward))
+
                     let plank_transform = Mat4.scale(0.55, 0.8, 1);
-                    plank_transform.pre_multiply(Mat4.rotation(theta, w[0], w[1], w[2]));
-                    plank_transform.pre_multiply(Mat4.rotation(Math.PI / 2, 1, 0, 0));
-                    plank_transform.pre_multiply(Mat4.rotation(Math.PI / 2, 0, 1, 0));
+                    plank_transform.pre_multiply(Mat4.rotation(angle, 0, 1, 0));
                     plank_transform.pre_multiply(Mat4.translation(center[0], center[1], center[2]));
                     this.shapes.plank.draw(caller, this.uniforms, plank_transform, this.materials.wood);
                 }
 
             }
         }
+
+        // draw sky???
+        this.shapes.ball.draw(caller, this.uniforms, Mat4.identity().times(Mat4.scale(80,80,80)), {...this.materials.plastic, color: color(0.5, 1, 1, 1)});
 
         //reset the spline to the new locations of the planks....
         // Inefficiently reset all points in the spline :(
@@ -490,7 +520,7 @@ export class Rope_bridge extends Rope_bridge_base {
 
 
         //cam spline draw (debug)
-        this.curve_cam.draw(caller, this.uniforms);
+        // this.curve_cam.draw(caller, this.uniforms);
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
@@ -511,7 +541,7 @@ export class Rope_bridge extends Rope_bridge_base {
                 num_points = this.spline_cam.size - 1;
                 idx = Math.floor((this.t_sim * cam_speed) % num_points);
                 iter = (this.t_sim * cam_speed) % 1.0;
-            
+
                 Shader.assign_camera(Mat4.look_at(this.spline_cam.get_position(iter, idx, idx + 1), this.corgo.position, vec3(0, 1, 0)), this.uniforms);
 
                 // normal update
@@ -532,38 +562,37 @@ export class Rope_bridge extends Rope_bridge_base {
         }
 
         // //crappy corgo animation
-        // //legs
-        // if (this.thigh_forward) {
-        //     this.thigh_angle += this.thigh_angle_change_rate;
-        //     this.corgo.thigh.articulation_matrix = this.corgo.thigh.articulation_matrix.times(Mat4.rotation(this.thigh_angle_change_rate, 0, 0, 1));
-        //     this.corgo.shoulder.articulation_matrix = this.corgo.shoulder.articulation_matrix.times(Mat4.rotation(-this.thigh_angle_change_rate, 0, 0, 1)); //shoulder, probably temp
-        //     if (this.thigh_angle >= this.thigh_max_angle) {
-        //         this.thigh_forward = false;
-        //     }
-        // } else {
-        //     this.thigh_angle -= this.thigh_angle_change_rate;
-        //     this.corgo.thigh.articulation_matrix = this.corgo.thigh.articulation_matrix.times(Mat4.rotation(-this.thigh_angle_change_rate, 0, 0, 1));
-        //     this.corgo.shoulder.articulation_matrix = this.corgo.shoulder.articulation_matrix.times(Mat4.rotation(this.thigh_angle_change_rate, 0, 0, 1)); //shoulder, probably temp
-        //     if (this.thigh_angle <= -this.thigh_max_angle) {
-        //         this.thigh_forward = true;
-        //     }
-        // }
-        // //console.log(this.thigh_angle);
-        //
-        // let wag_rate = 0.1
-        // if (this.tail_forward) {
-        //     this.tail_angle += wag_rate;
-        //     this.corgo.tail_muscle.articulation_matrix = this.corgo.tail_muscle.articulation_matrix.times(Mat4.rotation(wag_rate, 1, 0, 0));
-        //     if (this.tail_angle >= Math.PI / 6) {
-        //         this.tail_forward = false;
-        //     }
-        // } else {
-        //     this.tail_angle -= wag_rate;
-        //     this.corgo.tail_muscle.articulation_matrix = this.corgo.tail_muscle.articulation_matrix.times(Mat4.rotation(-wag_rate, 1, 0, 0));
-        //     if (this.tail_angle <= -Math.PI / 6) {
-        //         this.tail_forward = true;
-        //     }
-        // }
+        if (this.thigh_forward) {
+            this.thigh_angle += this.thigh_angle_change_rate;
+            this.corgo.thigh.rotation.z += this.thigh_angle_change_rate;
+            this.corgo.shoulder.rotation.z -= this.thigh_angle_change_rate;
+            if (this.thigh_angle >= this.thigh_max_angle) {
+                this.thigh_forward = false;
+            }
+        } else {
+            this.thigh_angle -= this.thigh_angle_change_rate;
+            this.corgo.thigh.rotation.z -= this.thigh_angle_change_rate;
+            this.corgo.shoulder.rotation.z += this.thigh_angle_change_rate;
+            if (this.thigh_angle <= -this.thigh_max_angle) {
+                this.thigh_forward = true;
+            }
+        }
+        //console.log(this.thigh_angle);
+
+        let wag_rate = 0.05
+        if (this.tail_forward) {
+            this.tail_angle += wag_rate;
+            this.corgo.tail_muscle.rotation.x += wag_rate;
+            if (this.tail_angle >= Math.PI / 6) {
+                this.tail_forward = false;
+            }
+        } else {
+            this.tail_angle -= wag_rate;
+            this.corgo.tail_muscle.rotation.x -= wag_rate;
+            if (this.tail_angle <= -Math.PI / 6) {
+                this.tail_forward = true;
+            }
+        }
 
     }
 }

@@ -165,8 +165,8 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
 
             // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
             // if (!caller.controls) {
-            //     this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
-            //     caller.controls.add_mouse_controls(caller.canvas);
+            //             //     this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
+            //             //     caller.controls.add_mouse_controls(caller.canvas);
             //
             //     // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
             //     // matrix follows the usual format for transforms, but with opposite values (cameras exist as
