@@ -203,6 +203,20 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             let starting_particle_index = this.particle_index;
             let starting_spring_index = this.spring_index;
 
+            console.log("start point: (" + x + ", " + y + ", " + z + ")   End point: (" + end_x + ", " + end_y + ", " + end_z + ")");
+            let alpha = Math.atan((end_x - x)/ (end_z - z)); // returns angle in radians
+            alpha = Math.abs(alpha);
+            let x_offset = Math.abs(Math.cos(alpha) * 2);
+            // if(end_x - x > 0)
+            //     x_offset *= -1;
+            let z_offset = Math.abs( Math.sin(alpha) * 2);
+            if(end_z - z > 0)
+                z_offset *= -1;
+            console.log("alpha: " + alpha)
+            console.log("x_offset: " + x_offset + ", z_offset: " + z_offset)
+            // let x_offset = 0;
+            // let z_offset = 2;
+
             // Create one rope of the floor of the rope bridge
             this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, 0, delta_x, delta_y, delta_z);
 
@@ -212,7 +226,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
 
             // Create the other rope on the floor of the rope bridge
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, -2, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, x_offset, 0, z_offset, delta_x, delta_y, delta_z);
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length)
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
@@ -237,7 +251,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
 
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, -2, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, x_offset, railing_height, z_offset, delta_x, delta_y, delta_z);
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
@@ -270,14 +284,16 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
                 if(i === 0)
                     vy = 0;
 
-                else if(i === 1 || i === 2) { // Tiny perturbation to make the movement of the bridge more interesting
-                    z += -0.1;
-                }
+                // else if(i === 1 || i === 2) { // Tiny perturbation to make the movement of the bridge more interesting
+                //     z += -0.1;
+                // }
 
 
 
                 this.msd.particles[start_index + i].set_properties(1, x + (i * delta_x) + x_offset, y + (i * delta_y) + y_offset, z + (i * delta_z) + z_offset, vx, vy, vz);
             }
+
+            console.log("Location of top particles: first " + this.msd.particles[start_index].position + " and last " + this.msd.particles[start_index + num - 1].position)
 
 
         }
