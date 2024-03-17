@@ -20,7 +20,7 @@ Only if it is **absolutely necessary**, you can run host and open the project lo
 
 **Firefox + Windows:** Hold the <kbd>CTRL</kbd> key while clicking on the refresh button.
 
-**Firefox+ Mac:** Hold the <kbd>SHIFT</kbd> key while clicking on the refresh button.
+**Firefox + Mac:** Hold the <kbd>SHIFT</kbd> key while clicking on the refresh button.
 
 **Safari:** <kbd>OPTION</kbd> + <kbd>SHIFT</kbd> + <kbd>E</kbd>
 
