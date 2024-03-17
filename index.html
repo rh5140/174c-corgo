@@ -22,17 +22,17 @@ index.html - The web page document containing the canvas (drawing surface).  It 
 <body style="background: DarkGray">
 
 
+<button id="p1">Bridge</button>
+<button id="p2">Mushroom</button>
+<button id="p3">Flower</button>
+<button id="p4">Flower</button>
+
 <!-- The following code embeds a WebGL canvas panel powered by a tree of Components from tiny-graphics.  //-->
 <div id="main-section" class="document-builder"></div>
 <script src="./math.js" type="text/javascript"></script>
-<script type=module>
-// ********************* THE ENTRY POINT OF YOUR JAVASCRIPT PROGRAM STARTS HERE *********************
-// Indicate which element on the page you want the Canvas_Widget to replace with a 3D WebGL area:
-const element_to_replace = document.querySelector ("#main-section");
-import {main_scene, scene_selector, additional_scenes} from './main-scene.js';
-const root = new main_scene ();                                                     // This line creates your scene.
-root.animated_children.push (...additional_scenes.map (scene => new scene ()));
-root.render_layout (element_to_replace);
+<script src="./main-scene.js" type="module"></script>
+
+
 </script>
 
 </body>

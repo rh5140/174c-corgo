@@ -114,28 +114,118 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
 
             this.tail_angle = 0;
             this.tail_forward = true;
+
+
+            //flower
+            this.flower_toggle = 0;
+            this.flower_up = vec3(0, 0, 0);
+
+
+
+            /*
+            //flower spline
+            this.flower_spline = new Hermite_Spline();
+
+            //right front
+            this.flower_spline.add_point(6, 5.0, -1, -10, 0, -10);
+
+            //right
+            this.flower_spline.add_point(4, 3, -3, -10, 2, 10);
+
+            //right back
+            this.flower_spline.add_point(2, 5.0, -1, 10, 0, 10);
+
+            //left front
+            this.flower_spline.add_point(6, 5.0, 1, 10, 0, 10);
+            
+            //left
+            this.flower_spline.add_point(4, 3, 3, -10, -2, 10);
+
+            //left back
+            this.flower_spline.add_point(2, 5.0, 1, 10, 0, -10);
+            
+
+            //right front
+            this.flower_spline.add_point(6, 5.0, -1, -10, 0, -10);
+            */
+            //flower spline
+            this.flower_spline = new Hermite_Spline();
+
+
+            //right
+            this.flower_spline.add_point(4, 4, -2, -10, 2, 10);
+
+            //right back
+            this.flower_spline.add_point(2, 5, 0, 10, 0, 10);
+
+            //left
+            this.flower_spline.add_point(4, 4, 2, -10, -2, 10);
+
+            //left back
+            this.flower_spline.add_point(2, 5, 0, 10, 0, -10);
+
+            //right
+            this.flower_spline.add_point(4, 4, -2, -10, 2, 10);
+
+
+            //this.flower_spline.add_point(2, 6.0, 0, -10.0, 0.0, 20.0);
+            //this.flower_spline.add_point(-5.0, -4.0, -5, -30.0, 0.0, 30.0);
+            //this.flower_spline.add_point(-5.0, -2.0, 5.0, 30.0, 0.0, 30.0);
+            //this.flower_spline.add_point(5.0, -2.0, 5.0, 30.0, 0.0, -30.0);
+
+            const curve_fn_flower = (t, i_0, i_1) => this.flower_spline.get_position(t, i_0, i_1);
+            this.flower_curve = new Curve_Shape(curve_fn_flower, this.sample_cnt, this.flower_spline.size);
+
+
+            //left arm
+            this.flower_spline_left = new Hermite_Spline();
+
+            this.flower_spline_left.add_point(0, 3, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 3, 0, 0, 0);
+            this.flower_spline_left.add_point(3, 4, 5, 0, 0, 0);
+            this.flower_spline_left.add_point(0, 3, 5, 0, 0, 0);
+
+            const curve_fn_flower_left = (t, i_0, i_1) => this.flower_spline_left.get_position(t, i_0, i_1);
+            this.flower_curve_left = new Curve_Shape(curve_fn_flower_left, this.sample_cnt, this.flower_spline_left.size);
+
+            //right
+
+            this.flower_spline_right = new Hermite_Spline();
+
+            this.flower_spline_right.add_point(0, 3, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -3, 0, 0, 0);
+            this.flower_spline_right.add_point(3, 4, -5, 0, 0, 0);
+            this.flower_spline_right.add_point(0, 3, -5, 0, 0, 0);
+            
+            const curve_fn_flower_right = (t, i_0, i_1) => this.flower_spline_right.get_position(t, i_0, i_1);
+            this.flower_curve_right = new Curve_Shape(curve_fn_flower_right, this.sample_cnt, this.flower_spline_right.size);
         }
 
-        render_animation(caller) {                                                // display():  Called once per frame of animation.  We'll isolate out
+        render_animation(caller) {
+
+            if(!this.running) return;
+            // display():  Called once per frame of animation.  We'll isolate out
             // the code that actually draws things into Part_one_hermite, a
             // subclass of this Scene.  Here, the base class's display only does
             // some initial setup.
 
-            // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-            if (!caller.controls) {
-                this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
-                caller.controls.add_mouse_controls(caller.canvas);
-
-                // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
-                // matrix follows the usual format for transforms, but with opposite values (cameras exist as
-                // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
-                // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
-                // orthographic() automatically generate valid matrices for one.  The input arguments of
-                // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
-
-                // !!! Camera changed here
-                Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
-            }
+            // // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
+            // if (!caller.controls) {
+            //     this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
+            //     caller.controls.add_mouse_controls(caller.canvas);
+            //
+            //     // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
+            //     // matrix follows the usual format for transforms, but with opposite values (cameras exist as
+            //     // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
+            //     // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
+            //     // orthographic() automatically generate valid matrices for one.  The input arguments of
+            //     // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
+            //
+            //     // !!! Camera changed here
+            // }
+            Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -152,14 +242,17 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
     }
 
 
-export class Corgo_collision extends Corgo_collision_base {                                                    // **Part_one_hermite** is a Scene object that can be added to any display canvas.
+export class FlowerDanceScene extends Corgo_collision_base {                                                    // **Part_one_hermite** is a Scene object that can be added to any display canvas.
                                                                                                                // This particular scene is broken up into two pieces for easier understanding.
                                                                                                                // See the other piece, My_Demo_Base, if you need to see the setup code.
                                                                                                                // The piece here exposes only the display() method, which actually places and draws
                                                                                                                // the shapes.  We isolate that code so it can be experimented with on its own.
                                                                                                                // This gives you a very small code sandbox for editing a simple scene, and for
                                                                                                                // experimenting with matrix transformations.
-    render_animation(caller) {                                                // display():  Called once per frame of animation.  For each shape that you want to
+    render_animation(caller) {
+
+        if(!this.running) return;
+        // display():  Called once per frame of animation.  For each shape that you want to
         // appear onscreen, place a .draw() call for it inside.  Each time, pass in a
         // different matrix value to control where the shape appears.
 
@@ -198,7 +291,12 @@ export class Corgo_collision extends Corgo_collision_base {                     
         });
 
         // TODO: you should draw spline here.
-        // this.curve.draw(caller, this.uniforms);
+        //this.curve.draw(caller, this.uniforms);
+
+        //flower debug
+        //this.flower_curve.draw(caller, this.uniforms);
+        //this.flower_curve_right.draw(caller, this.uniforms);
+        //this.flower_curve_left.draw(caller, this.uniforms);
 
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
@@ -281,20 +379,79 @@ export class Corgo_collision extends Corgo_collision_base {                     
                 this.corgo.velocity = this.spline.get_velocity(iter, idx, idx + 1);
                 this.corgo.acceleration = this.spline.get_velocity(iter, idx, idx + 1);
 
+                //flower ik
+                let f_speed = this.t_sim * 1.5;
+                num_points = this.flower_spline.size - 1;
+                idx = Math.floor(f_speed % num_points);
+                iter = f_speed % 1.0;
+                this.flower.update_IK(this.flower.eyes_node, this.flower_spline.get_position(iter, idx, idx+1));
+                
+                //left
+                num_points = this.flower_spline_left.size - 1;
+                idx = Math.floor(f_speed % num_points);
+                iter = f_speed % 1.0;
+                this.flower.update_IK(this.flower.l_hand_node, this.flower_spline_left.get_position(iter, idx, idx+1), this.flower.midsection_node);
+
+                //right
+                num_points = this.flower_spline_right.size - 1;
+                idx = Math.floor(f_speed % num_points);
+                iter = f_speed % 1.0;
+                this.flower.update_IK(this.flower.r_hand_node, this.flower_spline_right.get_position(iter, idx, idx+1), this.flower.midsection_node);
+
+
                 // normal update
                 this.msd.update(this.timestep)
                 this.t_sim += this.timestep;
+
             }
         }
 
         let counter = 0
         counter = 0
+        /*
         while(counter < 10){
           counter++
-          // if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
-          // if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
-          // if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+          if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
+          if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+          if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
         }
+        */
+       
+        //funne dance
+        //this.flower.position.plus(vec3(0, 3, 0))
+
+        let fstate = this.flower_toggle
+        let flower_targ_1 = vec3(1, 2, 0);
+        let flower_targ_2 = vec3(2, 4, 2);
+
+        //console.log(this.flower.eyes_node.location_matrix);
+
+        /*
+        while(counter < 10){
+            counter++;
+            if(fstate < 50){
+                if(this.flower.update_IK(this.flower.eyes_node, this.corgo.position.plus(vec3(0, 3, 0)))) return;
+                if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+                if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+                this.flower_up = this.corgo.position.plus(vec3(0, 10, 0))
+            }
+            else if(fstate >= 50){
+                if(this.flower.update_IK(this.flower.eyes_node, this.flower_up))return;
+                if(this.flower.update_IK(this.flower.r_hand_node, flower_targ_1, this.flower.midsection_node)) return;
+                if(this.flower.update_IK(this.flower.l_hand_node, flower_targ_1, this.flower.midsection_node)) return;
+            }
+        }
+        */
+
+        
+        this.flower_toggle++;
+        if(this.flower_toggle >= 100){
+            this.flower_toggle = 0;
+        }
+        
+
+        //if(this.flower.update_IK(this.flower.r_hand_node, this.corgo.position, this.flower.midsection_node)) return;
+        //if(this.flower.update_IK(this.flower.l_hand_node, this.corgo.position, this.flower.midsection_node)) return;
 
         //crappy corgo animation
         //legs
@@ -332,9 +489,9 @@ export class Corgo_collision extends Corgo_collision_base {                     
 
     }
 
-    render_controls() {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
-        // buttons with key bindings for affecting this scene, and live info readouts.
-        this.control_panel.innerHTML += "Part Three: (no buttons)";
-        this.new_line();
-    }
+    // render_controls() {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
+    //     // buttons with key bindings for affecting this scene, and live info readouts.
+    //     this.control_panel.innerHTML += "Part Three: (no buttons)";
+    //     this.new_line();
+    // }
 }
