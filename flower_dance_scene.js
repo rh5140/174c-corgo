@@ -129,7 +129,19 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
             this.flower_toggle = 0;
             this.flower_up = vec3(0, 0, 0);
 
+            //cam
+            
+            //cam spline
+            this.spline_cam = new Hermite_Spline();
 
+            this.spline_cam.add_point(12, 7, 13, 0, 5.0, 0);
+            this.spline_cam.add_point(12, 8, 10, 0, 5.0, 0);
+            this.spline_cam.add_point(12, 7, 7, 0, 5.0, 0);
+            this.spline_cam.add_point(12, 8, 10, 0, 5.0, 0);
+            this.spline_cam.add_point(12, 7, 13, 0, 5.0, 0);
+
+            const curve_fn_spline = (t, i_0, i_1) => this.spline_cam.get_position(t, i_0, i_1);
+            this.curve_cam = new Curve_Shape(curve_fn_spline, this.sample_cnt, this.spline_cam.size);
 
             /*
             //flower spline
@@ -234,7 +246,7 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
             //
             //     // !!! Camera changed here
             // }
-            Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
+            //Shader.assign_camera(Mat4.look_at(vec3(15, 2, 15), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -306,6 +318,9 @@ export class FlowerDanceScene extends Corgo_collision_base {                    
         //this.flower_curve.draw(caller, this.uniforms);
         //this.flower_curve_right.draw(caller, this.uniforms);
         //this.flower_curve_left.draw(caller, this.uniforms);
+
+        this.curve_cam.draw(caller, this.uniforms);
+
 
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
@@ -408,12 +423,24 @@ export class FlowerDanceScene extends Corgo_collision_base {                    
                 this.flower.update_IK(this.flower.r_hand_node, this.flower_spline_right.get_position(iter, idx, idx+1), this.flower.midsection_node);
 
 
+                //cam
+                let cam_speed = 0.2;
+                num_points = this.spline_cam.size - 1;
+                idx = Math.floor((this.t_sim * cam_speed) % num_points);
+                iter = (this.t_sim * cam_speed) % 1.0;
+
+                Shader.assign_camera(Mat4.look_at(this.spline_cam.get_position(iter, idx, idx + 1), vec3(-30, -16, -30), vec3(0, 1, 0)), this.uniforms);
+
+
+
                 // normal update
                 this.msd.update(this.timestep)
                 this.t_sim += this.timestep;
 
             }
         }
+
+    
 
         let counter = 0
         counter = 0

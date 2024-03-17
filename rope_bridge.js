@@ -169,13 +169,6 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             //cam spline
             this.spline_cam = new Hermite_Spline();
 
-            /*
-            this.spline_cam.add_point(5, 5, -5, -30.0, 0.0, 30.0);
-            this.spline_cam.add_point(5, 5, 0, 30.0, 0.0, 30.0);
-            this.spline_cam.add_point(15, 5, 0, 30.0, 0.0, -30.0);
-            this.spline_cam.add_point(15, 5, -5, -30.0, 0.0, -30.0);
-            this.spline_cam.add_point(5, 5, -5, -30.0, 0.0, 30.0);
-            */
             this.spline_cam.add_point(20, 15, -5, 10, 0, 0);
             this.spline_cam.add_point(25, 15, 0, 0, 0, 10);
             this.spline_cam.add_point(20, 15, 5, -10, 0, 0);
