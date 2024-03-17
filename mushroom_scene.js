@@ -155,6 +155,21 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
 
             // camera change stuff
             this.corgo_appear = false;
+
+                        //cam spline
+            this.spline_cam = new Hermite_Spline();
+
+            this.spline_cam.add_point(12, 1.5, 12, 10, 0, 0);
+            this.spline_cam.add_point(13, 3, 12, 0, 0, 10);
+            this.spline_cam.add_point(12, 2, 12, -10, 0, 0);
+            this.spline_cam.add_point(11, 3, 12, 0, 0, -10);
+            this.spline_cam.add_point(12, 1.5, 12, 10, 0, 0);
+
+            const curve_fn_spline = (t, i_0, i_1) => this.spline_cam.get_position(t, i_0, i_1);
+            this.curve_cam = new Curve_Shape(curve_fn_spline, this.sample_cnt, this.spline_cam.size);
+
+            
+            Shader.assign_camera(Mat4.look_at(vec3(12, 12, 12), vec3(-100, -100, -100), vec3(0, 1, 0)), this.uniforms);
         }
 
         render_animation(caller) {                                                // display():  Called once per frame of animation.  We'll isolate out
@@ -183,7 +198,7 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
             //     // Start w/ focus on frog
             //
             // }
-            Shader.assign_camera(Mat4.look_at(vec3(12, 12, 12), vec3(-100, -100, -100), vec3(0, 1, 0)), this.uniforms);
+            //Shader.assign_camera(Mat4.look_at(vec3(12, 12, 12), vec3(-100, -100, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -195,6 +210,7 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
             // !!! Light changed here
             const light_position = vec4(20 * Math.cos(angle), 20, 20 * Math.sin(angle), 1.0);
             this.uniforms.lights = [defs.Phong_Shader.light_source(light_position, color(1, 1, 1, 1), 1000000)];
+
 
         }
     }
@@ -238,7 +254,7 @@ export class Mushroom_scene extends Mushroom_scene_base {
             Shader.assign_camera(Mat4.look_at(vec3(1.75, 5, 1.75), vec3(-100, -300, -100), vec3(0, 1, 0)), this.uniforms);
         }
         else if (this.t_sim > 10 && !this.corgo_appear) {
-            Shader.assign_camera(Mat4.look_at(vec3(12, 1.5, 12), vec3(-100, -25, -100), vec3(0, 1, 0)), this.uniforms);
+            //Shader.assign_camera(Mat4.look_at(vec3(12, 1.5, 12), vec3(-100, -25, -100), vec3(0, 1, 0)), this.uniforms);
             this.corgo_appear = true;
             this.audio.bark.play().catch((e) => {
                 console.log("Not ready")
@@ -483,6 +499,17 @@ export class Mushroom_scene extends Mushroom_scene_base {
                 // normal update
                 this.msd.update(this.timestep)
                 this.t_sim += this.timestep;
+
+                if(this.corgo_appear){
+                    //Shader.assign_camera(Mat4.look_at(vec3(12, 1.5, 12), vec3(-100, -25, -100), vec3(0, 1, 0)), this.uniforms);
+                    //cam
+                    let cam_speed = 0.2;
+                    num_points = this.spline_cam.size - 1;
+                    console.log(this.spline_cam.get_position(iter, idx, idx + 1));
+                    idx = Math.floor((this.t_sim * cam_speed) % num_points);
+                    iter = (this.t_sim * cam_speed) % 1.0;
+                    Shader.assign_camera(Mat4.look_at(this.spline_cam.get_position(iter, idx, idx + 1), vec3(-100, -25, -100), vec3(0, 1, 0)), this.uniforms);
+                }
             }
         }
 
