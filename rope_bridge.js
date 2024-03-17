@@ -236,6 +236,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             const plank_ks = 5000;
             const plank_kd = 500;
             const plank_length = 2;
+            console.log("Bridge plank indices: " + this.spring_index + " to " + (this.spring_index + particles_in_rope))
             this.msd.create_springs(particles_in_rope); // There are as many planks as particles in a single rope
             for(let i = 0 ; i < particles_in_rope; i++) {
                 this.msd.springs[this.spring_index + i].connect(this.msd.particles[starting_particle_index + i], this.msd.particles[starting_particle_index + particles_in_rope + i], plank_ks, plank_kd, plank_length);
