@@ -21,29 +21,36 @@ Object.assign (defs,
 
 // ******************** SELECT THE DEMO TO DISPLAY:
 
-const element_to_replace = document.querySelector ("#main-section");
-
-let curScene = Rope_bridge
+let curScene = 0
 let scenes = [Rope_bridge, Mushroom_scene, FlowerDanceScene, Liquid_Scene];
 let i_scenes = scenes.map (scene => new scene ());
+let scene_ids = ["#Bridge", "#Mushroom", "#Flower", "#Water"]
 
-function select_scene(i) {
+function select_scene(i, element_to_replace) {
     element_to_replace.innerHTML = "";
-    curScene.running = false
-    curScene = i_scenes[i];
-    curScene.render_layout (element_to_replace);
-    // curScene.init()
-    curScene.running = true
+    i_scenes[i].render_layout (element_to_replace);
+    i_scenes[i].running = false
+    document.querySelector (scene_ids[i]).style.display = "none"
 }
 
-document.getElementById("p1").addEventListener("click", () => { select_scene(0) });
-document.getElementById("p2").addEventListener("click", () => { select_scene(1) });
-document.getElementById("p3").addEventListener("click", () => { select_scene(2) });
-document.getElementById("p4").addEventListener("click", () => { select_scene(3) });
+function show_scene(i){
+    i_scenes[curScene].running = false
+    document.querySelector (scene_ids[curScene]).style.display = "none"
+    curScene = i
+    i_scenes[curScene].running = true
+    document.querySelector (scene_ids[curScene]).style.display = "block"
+}
 
-select_scene(0)
+document.getElementById("p1").addEventListener("click", () => { show_scene(0) });
+document.getElementById("p2").addEventListener("click", () => { show_scene(1) });
+document.getElementById("p3").addEventListener("click", () => { show_scene(2) });
+document.getElementById("p4").addEventListener("click", () => { show_scene(3) });
 
-console.log("Test")
+for(let i = 0; i < scene_ids.length; i++){
+    select_scene(i, document.querySelector (scene_ids[i] + " > .document-builder"))
+}
+
+show_scene(0)
 
 export { scenes, defs, select_scene };
 

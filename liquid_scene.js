@@ -95,20 +95,7 @@ export class Liquid_Scene extends Component{
     render_animation(caller) {
         if(!this.running) return;
 
-        if (!caller.controls) {
-            this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
-            caller.controls.add_mouse_controls(caller.canvas);
-
-            // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
-            // matrix follows the usual format for transforms, but with opposite values (cameras exist as
-            // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
-            // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
-            // orthographic() automatically generate valid matrices for one.  The input arguments of
-            // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
-
-            // !!! Camera changed here
-            Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
-        }
+        Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
         this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
         //Camera
         // Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
