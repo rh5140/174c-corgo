@@ -137,10 +137,14 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             // Create the first bridge (the long one)
             // this.create_rope_bridge(-1, 5, -1, 20);
-            this.create_rope_bridge(-1, 5, -1, 19, 8, 19);
+            this.create_rope_bridge(-1, 3, -1, 19, 2.5, 19);
 
             // Create the second bridge
-            this.create_rope_bridge(20, 9, 20, 32, 6, -3);
+            this.create_rope_bridge(20, 2.5, 18, 32, 6, -3);
+
+            this.create_rope_bridge(32, 6, -3, 20, 2.5, -18);
+
+            this.create_rope_bridge(17, 2.5, -18, 1, 3, -4);
 
 
             this.timestep = 1 / 1000;
@@ -180,10 +184,6 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             const curve_fn_spline = (t, i_0, i_1) => this.spline_cam.get_position(t, i_0, i_1);
             this.curve_cam = new Curve_Shape(curve_fn_spline, this.sample_cnt, this.spline_cam.size);
-
-
-
-
         }
 
         create_rope_bridge(x, y, z, end_x, end_y, end_z) { // (x, y, z) is the start point of the bridge, (end_x, end_y, end_z) is the end point 
@@ -318,7 +318,12 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
         }
 
         render_animation(caller) {
-            if(!this.running) return
+            if (!this.running) return
+            // if (!caller.controls) {
+            //     this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
+            //     caller.controls.add_mouse_controls(caller.canvas);
+            //     Shader.assign_camera(Mat4.look_at(vec3(50,25, 25), vec3(-200, -100, -100), vec3(0, 1, 0)), this.uniforms);
+            // }
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -361,10 +366,6 @@ export class Rope_bridge extends Rope_bridge_base {
 
         this.shapes.box.draw(caller, this.uniforms, floor_transform, this.materials.water);
 
-        // Draw random mushroom for debugging
-        this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(19, 8, 19), this.materials.mushroomMtl);
-        // this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(6, 5, -15), this.materials.mushroomMtl);
-
 
         // Draw Cube Corgo
         this.corgo.draw(caller, this.uniforms);
@@ -389,7 +390,7 @@ export class Rope_bridge extends Rope_bridge_base {
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 3, 3)));
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, -8).times(Mat4.scale(3, 3, 3)));
         this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(5, 2, 8).times(Mat4.scale(3, 3, 3)));
-        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(25, 2, 6).times(Mat4.scale(3, 3, 3)));
+        this.shapes.tree.draw(caller, this.uniforms, Mat4.translation(32, 2, 12).times(Mat4.scale(3, 3, 3)));
         // // Giant kelp
         // this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(0, 2, -10).times(Mat4.scale(3, 4, 3)));
         // this.shapes.dead_tree.draw(caller, this.uniforms, Mat4.translation(-8, 2, 0).times(Mat4.rotation(Math.PI / 6 , 1, 0, 1)).times(Mat4.scale(3, 7, 3)));
@@ -422,6 +423,12 @@ export class Rope_bridge extends Rope_bridge_base {
 
 
         this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(15, 0, -6).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
+
+        // Draw random mushroom for debugging
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(19, 0, 19).times(Mat4.scale(5, 4, 3)), this.materials.mountainside);
+
+        // Draw random mushroom for debugging
+        this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(19, 0, -19).times(Mat4.scale(5, 4, 3)), this.materials.mountainside);
 
         // Mushroom island mountain
         this.shapes.mountain.draw(caller, this.uniforms, Mat4.translation(32, 0, -3).times(Mat4.scale(5, 5, 3)), this.materials.mountainside);
@@ -483,16 +490,19 @@ export class Rope_bridge extends Rope_bridge_base {
 
                     let points_dir = p2.minus(p1)
                     let forward = points_dir.cross(vec3(0, 1, 0)).normalized()
-                    let angle = math.acos(vec(0,0,1).dot(forward))
+                    let angle = math.atan2(vec(0,0,1).cross(forward).dot(vec3(0, 1, 0)), vec(0,0,1).dot(forward))
 
                     let plank_transform = Mat4.scale(0.55, 0.8, 1);
-                    plank_transform.pre_multiply(Mat4.rotation(-angle, 0, 1, 0));
+                    plank_transform.pre_multiply(Mat4.rotation(angle, 0, 1, 0));
                     plank_transform.pre_multiply(Mat4.translation(center[0], center[1], center[2]));
                     this.shapes.plank.draw(caller, this.uniforms, plank_transform, this.materials.wood);
                 }
 
             }
         }
+
+        // draw sky???
+        this.shapes.ball.draw(caller, this.uniforms, Mat4.identity().times(Mat4.scale(80,80,80)), {...this.materials.plastic, color: color(0.5, 1, 1, 1)});
 
         //reset the spline to the new locations of the planks....
         // Inefficiently reset all points in the spline :(
@@ -510,7 +520,7 @@ export class Rope_bridge extends Rope_bridge_base {
 
 
         //cam spline draw (debug)
-        this.curve_cam.draw(caller, this.uniforms);
+        // this.curve_cam.draw(caller, this.uniforms);
 
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
@@ -531,7 +541,7 @@ export class Rope_bridge extends Rope_bridge_base {
                 num_points = this.spline_cam.size - 1;
                 idx = Math.floor((this.t_sim * cam_speed) % num_points);
                 iter = (this.t_sim * cam_speed) % 1.0;
-            
+
                 Shader.assign_camera(Mat4.look_at(this.spline_cam.get_position(iter, idx, idx + 1), this.corgo.position, vec3(0, 1, 0)), this.uniforms);
 
                 // normal update
