@@ -217,8 +217,9 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
             // let x_offset = 0;
             // let z_offset = 2;
 
+            const offset = vec3(end_x, end_y, end_z).minus(vec3(x, y, z)).normalized().cross(vec3(0, 1, 0))
             // Create one rope of the floor of the rope bridge
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, 0, 0, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, -offset[0], 0, -offset[2], delta_x, delta_y, delta_z);
 
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
@@ -226,7 +227,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
 
             // Create the other rope on the floor of the rope bridge
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, x_offset, 0, z_offset, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, offset[0], 0, offset[2], delta_x, delta_y, delta_z);
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length)
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
@@ -246,13 +247,13 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
             // Add railings
             const railing_height = 2;
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, 0, railing_height, 0, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, -offset[0], railing_height, -offset[2], delta_x, delta_y, delta_z);
             // console.log("spring index: " + this.spring_index)
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
 
-            this.create_rope(particles_in_rope, this.particle_index, x, y, z, x_offset, railing_height, z_offset, delta_x, delta_y, delta_z);
+            this.create_rope(particles_in_rope, this.particle_index, x, y, z, offset[0], railing_height, offset[2], delta_x, delta_y, delta_z);
             this.create_springs_for_rope(springs_in_rope, this.spring_index, this.particle_index, ks, kd, natural_rope_length);
             this.particle_index += particles_in_rope;
             this.spring_index += springs_in_rope;
@@ -480,10 +481,12 @@ export class Rope_bridge extends Rope_bridge_base {
                 else {
                     plank_locations.push(center); // For the new spline
 
+                    let points_dir = p2.minus(p1)
+                    let forward = points_dir.cross(vec3(0, 1, 0)).normalized()
+                    let angle = math.acos(vec(0,0,1).dot(forward))
+
                     let plank_transform = Mat4.scale(0.55, 0.8, 1);
-                    plank_transform.pre_multiply(Mat4.rotation(theta, w[0], w[1], w[2]));
-                    plank_transform.pre_multiply(Mat4.rotation(Math.PI / 2, 1, 0, 0));
-                    plank_transform.pre_multiply(Mat4.rotation(Math.PI / 2, 0, 1, 0));
+                    plank_transform.pre_multiply(Mat4.rotation(-angle, 0, 1, 0));
                     plank_transform.pre_multiply(Mat4.translation(center[0], center[1], center[2]));
                     this.shapes.plank.draw(caller, this.uniforms, plank_transform, this.materials.wood);
                 }
@@ -549,38 +552,37 @@ export class Rope_bridge extends Rope_bridge_base {
         }
 
         // //crappy corgo animation
-        // //legs
-        // if (this.thigh_forward) {
-        //     this.thigh_angle += this.thigh_angle_change_rate;
-        //     this.corgo.thigh.articulation_matrix = this.corgo.thigh.articulation_matrix.times(Mat4.rotation(this.thigh_angle_change_rate, 0, 0, 1));
-        //     this.corgo.shoulder.articulation_matrix = this.corgo.shoulder.articulation_matrix.times(Mat4.rotation(-this.thigh_angle_change_rate, 0, 0, 1)); //shoulder, probably temp
-        //     if (this.thigh_angle >= this.thigh_max_angle) {
-        //         this.thigh_forward = false;
-        //     }
-        // } else {
-        //     this.thigh_angle -= this.thigh_angle_change_rate;
-        //     this.corgo.thigh.articulation_matrix = this.corgo.thigh.articulation_matrix.times(Mat4.rotation(-this.thigh_angle_change_rate, 0, 0, 1));
-        //     this.corgo.shoulder.articulation_matrix = this.corgo.shoulder.articulation_matrix.times(Mat4.rotation(this.thigh_angle_change_rate, 0, 0, 1)); //shoulder, probably temp
-        //     if (this.thigh_angle <= -this.thigh_max_angle) {
-        //         this.thigh_forward = true;
-        //     }
-        // }
-        // //console.log(this.thigh_angle);
-        //
-        // let wag_rate = 0.1
-        // if (this.tail_forward) {
-        //     this.tail_angle += wag_rate;
-        //     this.corgo.tail_muscle.articulation_matrix = this.corgo.tail_muscle.articulation_matrix.times(Mat4.rotation(wag_rate, 1, 0, 0));
-        //     if (this.tail_angle >= Math.PI / 6) {
-        //         this.tail_forward = false;
-        //     }
-        // } else {
-        //     this.tail_angle -= wag_rate;
-        //     this.corgo.tail_muscle.articulation_matrix = this.corgo.tail_muscle.articulation_matrix.times(Mat4.rotation(-wag_rate, 1, 0, 0));
-        //     if (this.tail_angle <= -Math.PI / 6) {
-        //         this.tail_forward = true;
-        //     }
-        // }
+        if (this.thigh_forward) {
+            this.thigh_angle += this.thigh_angle_change_rate;
+            this.corgo.thigh.rotation.z += this.thigh_angle_change_rate;
+            this.corgo.shoulder.rotation.z -= this.thigh_angle_change_rate;
+            if (this.thigh_angle >= this.thigh_max_angle) {
+                this.thigh_forward = false;
+            }
+        } else {
+            this.thigh_angle -= this.thigh_angle_change_rate;
+            this.corgo.thigh.rotation.z -= this.thigh_angle_change_rate;
+            this.corgo.shoulder.rotation.z += this.thigh_angle_change_rate;
+            if (this.thigh_angle <= -this.thigh_max_angle) {
+                this.thigh_forward = true;
+            }
+        }
+        //console.log(this.thigh_angle);
+
+        let wag_rate = 0.05
+        if (this.tail_forward) {
+            this.tail_angle += wag_rate;
+            this.corgo.tail_muscle.rotation.x += wag_rate;
+            if (this.tail_angle >= Math.PI / 6) {
+                this.tail_forward = false;
+            }
+        } else {
+            this.tail_angle -= wag_rate;
+            this.corgo.tail_muscle.rotation.x -= wag_rate;
+            if (this.tail_angle <= -Math.PI / 6) {
+                this.tail_forward = true;
+            }
+        }
 
     }
 }
