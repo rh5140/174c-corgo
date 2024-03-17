@@ -1,10 +1,9 @@
-import {defs, tiny} from './examples/common.js';
-import {Shape_From_File} from "./examples/obj-file-demo.js";
-import {Mass_Spring_Damper} from "./lib/particle_system.js";
-import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
-import {Corgo} from "./assets/corgi/corgi.js";
-import {Tree, Small_Tree, Dead_Tree} from "./assets/tree/tree.js";
-import {select_scene} from "./main-scene.js"
+import { Corgo } from "./assets/corgi/corgi.js";
+import { Dead_Tree, Small_Tree, Tree } from "./assets/tree/tree.js";
+import { defs, tiny } from './examples/common.js';
+import { Shape_From_File } from "./examples/obj-file-demo.js";
+import { Mass_Spring_Damper } from "./lib/particle_system.js";
+import { Curve_Shape, Hermite_Spline } from "./lib/spline.js";
 
 // Pull these names into this module's scope for convenience:
 const {vec, vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
@@ -335,7 +334,10 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
 export class Rope_bridge extends Rope_bridge_base {
     render_animation(caller) {
-        if(!this.running) return
+        if(!this.running) {
+            this.audio.wind.pause();
+            return
+        }
 
         // Call the setup code that we left inside the base class:
         super.render_animation(caller);
