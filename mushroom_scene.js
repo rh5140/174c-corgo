@@ -218,7 +218,10 @@ export const Mushroom_scene_base = defs.Mushroom_scene_base =
 
 export class Mushroom_scene extends Mushroom_scene_base {
     render_animation(caller) {
-        if(!this.running) return
+        if(!this.running) {
+            this.audio.bgm.pause();
+            return;
+        }
 
         super.render_animation(caller);
 
@@ -260,11 +263,6 @@ export class Mushroom_scene extends Mushroom_scene_base {
                 console.log("Not ready")
             });
         }
-
-        // audio??
-        this.audio.bgm.play().catch((e) => {
-            console.log("Not ready")
-        });
 
         // Draw Corgo
         if (this.corgo_appear)
@@ -487,6 +485,10 @@ export class Mushroom_scene extends Mushroom_scene_base {
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
         if (this.running) {
+            this.audio.bgm.play().catch((e) => {
+                console.log("Not ready")
+            });
+
             const t_next = this.t_sim + dt;
             while (this.t_sim < t_next) {
                 let num_points = this.spline.size - 1;

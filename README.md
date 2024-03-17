@@ -70,3 +70,5 @@ Yun made textures for the flower, mushroom, and water scene.
 - [Mushroom scene background audio](https://freesound.org/people/soundshmyak/sounds/697832/)
 - [Dog bark audio](https://www.zapsplat.com/music/dog-bark-small-2/)
 - [Wind audio](https://pixabay.com/sound-effects/howling-wind-109590/)
+- [Water audio](https://freesound.org/people/septalium1/sounds/583833/)
+- [Africa - Toto](https://www.youtube.com/watch?v=FTQbiNvZqaY)

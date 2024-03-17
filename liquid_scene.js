@@ -1,10 +1,10 @@
 
-import {defs, tiny} from './examples/common.js';
-import {Shape_From_File} from "./examples/obj-file-demo.js";
-import {Tree} from "./assets/tree/tree.js";
-import {Simulation} from "./lib/liquid_particle_system.js";
-import {Rigidbody, BoxCollider} from "./lib/rigidbody.js";
-import {Corgo} from "./assets/corgi/corgi.js";
+import { Corgo } from "./assets/corgi/corgi.js";
+import { Tree } from "./assets/tree/tree.js";
+import { defs, tiny } from './examples/common.js';
+import { Shape_From_File } from "./examples/obj-file-demo.js";
+import { Simulation } from "./lib/liquid_particle_system.js";
+import { BoxCollider, Rigidbody } from "./lib/rigidbody.js";
 
 // Pull these names into this module's scope for convenience:
 const {vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
@@ -101,15 +101,26 @@ export class Liquid_Scene extends Component{
 
         this.tail_angle = 0;
         this.tail_forward = true;
+
+        this.audio = {
+            bgm: new Audio(),
+        }
+        this.audio.bgm.src = "assets/audio/water.mp3"; // https://freesound.org/people/septalium1/sounds/583833/
     }
     render_animation(caller) {
-        if(!this.running) return;
+        if(!this.running) {
+            this.audio.bgm.pause();
+            return;
+        }
 
         Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
         this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
         //Camera
         // Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
         // this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
+        this.audio.bgm.play().catch((e) => {
+            console.log("Not ready")
+        });
 
         //Lights
         const t = this.t = this.uniforms.animation_time / 1000;

@@ -1,10 +1,10 @@
-import {defs, tiny} from './examples/common.js';
-import {Shape_From_File} from "./examples/obj-file-demo.js";
-import {Mass_Spring_Damper} from "./lib/particle_system.js";
-import {Curve_Shape, Hermite_Spline} from "./lib/spline.js";
-import {Corgo} from "./assets/corgi/corgi.js";
-import {Flower} from "./assets/flower/flower.js";
-import {Tree} from "./assets/tree/tree.js";
+import { Corgo } from "./assets/corgi/corgi.js";
+import { Flower } from "./assets/flower/flower.js";
+import { Tree } from "./assets/tree/tree.js";
+import { defs, tiny } from './examples/common.js';
+import { Shape_From_File } from "./examples/obj-file-demo.js";
+import { Mass_Spring_Damper } from "./lib/particle_system.js";
+import { Curve_Shape, Hermite_Spline } from "./lib/spline.js";
 
 // Pull these names into this module's scope for convenience:
 const {vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component} = tiny;
@@ -222,6 +222,11 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
             
             const curve_fn_flower_right = (t, i_0, i_1) => this.flower_spline_right.get_position(t, i_0, i_1);
             this.flower_curve_right = new Curve_Shape(curve_fn_flower_right, this.sample_cnt, this.flower_spline_right.size);
+
+            this.audio = {
+                africa: new Audio(),
+            }
+            this.audio.africa.src = "assets/audio/Toto_Africa.mp3";
         }
 
         render_animation(caller) {
@@ -272,7 +277,10 @@ export class FlowerDanceScene extends Corgo_collision_base {                    
                                                                                                                // experimenting with matrix transformations.
     render_animation(caller) {
 
-        if(!this.running) return;
+        if(!this.running) {
+            this.audio.africa.pause();
+            return;
+        }
         // display():  Called once per frame of animation.  For each shape that you want to
         // appear onscreen, place a .draw() call for it inside.  Each time, pass in a
         // different matrix value to control where the shape appears.
@@ -394,6 +402,7 @@ export class FlowerDanceScene extends Corgo_collision_base {                    
         let dt = this.dt = Math.min(1 / 30, this.uniforms.animation_delta_time / 1000);
         // dt *= this.sim_speed;
         if (this.running) {
+            this.audio.africa.play();
             const t_next = this.t_sim + dt;
             while (this.t_sim < t_next) {
                 let num_points = this.spline.size - 1;
