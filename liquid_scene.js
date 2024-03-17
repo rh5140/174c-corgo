@@ -93,6 +93,8 @@ export class Liquid_Scene extends Component{
         this.animt = 0
     }
     render_animation(caller) {
+        if(!this.running) return;
+
         if (!caller.controls) {
             this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
             caller.controls.add_mouse_controls(caller.canvas);

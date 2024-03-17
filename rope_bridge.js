@@ -276,6 +276,8 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
         }
 
         render_animation(caller) {
+            if(!this.running) return
+
             Shader.assign_camera(Mat4.look_at(vec3(50,25, 25), vec3(-200, -100, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
@@ -295,10 +297,7 @@ export const Rope_bridge_base = defs.Rope_bridge_base =
 
 export class Rope_bridge extends Rope_bridge_base {
     render_animation(caller) {
-
-        // console.log("this.running: " + this.running)
-        if(!this.running) // Hacky 
-            return;
+        if(!this.running) return
 
         // Call the setup code that we left inside the base class:
         super.render_animation(caller);

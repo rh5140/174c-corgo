@@ -79,8 +79,12 @@ class Corgo extends KinematicBody{
     }
 
     draw(webgl_manager, uniforms, transform) {
-        if(typeof transform === "undefined") super.draw(webgl_manager, uniforms, this.transformation_matrix)
-        else super.draw(webgl_manager, uniforms, transform)
+        if(typeof transform === "undefined") {
+            super.draw(webgl_manager, uniforms, this.transformation_matrix)
+        }
+        else {
+            super.draw(webgl_manager, uniforms, transform)
+        }
     }
 
     get transformation_matrix(){

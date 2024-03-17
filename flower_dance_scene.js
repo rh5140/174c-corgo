@@ -203,26 +203,29 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
             this.flower_curve_right = new Curve_Shape(curve_fn_flower_right, this.sample_cnt, this.flower_spline_right.size);
         }
 
-        render_animation(caller) {                                                // display():  Called once per frame of animation.  We'll isolate out
+        render_animation(caller) {
+
+            if(!this.running) return;
+            // display():  Called once per frame of animation.  We'll isolate out
             // the code that actually draws things into Part_one_hermite, a
             // subclass of this Scene.  Here, the base class's display only does
             // some initial setup.
 
-            // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-            if (!caller.controls) {
-                this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
-                caller.controls.add_mouse_controls(caller.canvas);
-
-                // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
-                // matrix follows the usual format for transforms, but with opposite values (cameras exist as
-                // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
-                // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
-                // orthographic() automatically generate valid matrices for one.  The input arguments of
-                // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
-
-                // !!! Camera changed here
-                Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
-            }
+            // // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
+            // if (!caller.controls) {
+            //     this.animated_children.push(caller.controls = new defs.Movement_Controls({uniforms: this.uniforms}));
+            //     caller.controls.add_mouse_controls(caller.canvas);
+            //
+            //     // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
+            //     // matrix follows the usual format for transforms, but with opposite values (cameras exist as
+            //     // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
+            //     // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
+            //     // orthographic() automatically generate valid matrices for one.  The input arguments of
+            //     // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
+            //
+            //     // !!! Camera changed here
+            // }
+            Shader.assign_camera(Mat4.look_at(vec3(10, 2, 10), vec3(-100, 0, -100), vec3(0, 1, 0)), this.uniforms);
             this.uniforms.projection_transform = Mat4.perspective(Math.PI / 4, caller.width / caller.height, 1, 100);
 
             // *** Lights: *** Values of vector or point lights.  They'll be consulted by
@@ -246,7 +249,10 @@ export class FlowerDanceScene extends Corgo_collision_base {                    
                                                                                                                // the shapes.  We isolate that code so it can be experimented with on its own.
                                                                                                                // This gives you a very small code sandbox for editing a simple scene, and for
                                                                                                                // experimenting with matrix transformations.
-    render_animation(caller) {                                                // display():  Called once per frame of animation.  For each shape that you want to
+    render_animation(caller) {
+
+        if(!this.running) return;
+        // display():  Called once per frame of animation.  For each shape that you want to
         // appear onscreen, place a .draw() call for it inside.  Each time, pass in a
         // different matrix value to control where the shape appears.
 
@@ -483,9 +489,9 @@ export class FlowerDanceScene extends Corgo_collision_base {                    
 
     }
 
-    render_controls() {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
-        // buttons with key bindings for affecting this scene, and live info readouts.
-        this.control_panel.innerHTML += "Part Three: (no buttons)";
-        this.new_line();
-    }
+    // render_controls() {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
+    //     // buttons with key bindings for affecting this scene, and live info readouts.
+    //     this.control_panel.innerHTML += "Part Three: (no buttons)";
+    //     this.new_line();
+    // }
 }

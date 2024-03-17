@@ -23,14 +23,17 @@ Object.assign (defs,
 
 const element_to_replace = document.querySelector ("#main-section");
 
+let curScene = Rope_bridge
 let scenes = [Rope_bridge, Mushroom_scene, FlowerDanceScene, Liquid_Scene];
 let i_scenes = scenes.map (scene => new scene ());
 
 function select_scene(i) {
     element_to_replace.innerHTML = "";
-    const curScene = i_scenes[i];
+    curScene.running = false
+    curScene = i_scenes[i];
     curScene.render_layout (element_to_replace);
-    curScene.init()
+    // curScene.init()
+    curScene.running = true
 }
 
 document.getElementById("p1").addEventListener("click", () => { select_scene(0) });
