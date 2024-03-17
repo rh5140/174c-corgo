@@ -32,7 +32,8 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
                 'axis': new defs.Axis_Arrows(),
                 'mushroom': new Shape_From_File("assets/mushroom.obj"),
                 'cloud': new Shape_From_File("assets/cloud.obj"),
-                'tree': new Tree()
+                'tree': new Tree(),
+                'mountain': new Shape_From_File("assets/mountain/mountain.obj"),
             };
 
             // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -63,7 +64,15 @@ export const Corgo_collision_base = defs.Corgo_collision_base =
                 specularity: 0,
                 color: color(1, 1, 1, 1),
                 texture: new Texture("assets/mushroom.png")
-            };
+            }
+            this.materials.mountain = {
+                shader: tex_phong,
+                ambient: .4,
+                diffusivity: .6,
+                specularity: 0.3,
+                color: color(1, 1, 1    , 1),
+                texture: new Texture("assets/mountain/mountain.png")
+            }
 
             // Spline
             this.spline = new Hermite_Spline();
@@ -442,6 +451,10 @@ export class FlowerDanceScene extends Corgo_collision_base {                    
             }
         }
         */
+        for(let i = 0; i < math.PI; i+=math.PI/8) {
+            this.shapes.mountain.draw(caller, this.uniforms, Mat4.rotation(i, 0, 1, 0).times(Mat4.translation(0, 0, -75)).times(Mat4.scale(20, 20, 20)), this.materials.mountain);
+        }
+        this.shapes.ball.draw(caller, this.uniforms, Mat4.identity().times(Mat4.scale(70,70,70)), {...this.materials.plastic, ambient: 1, color: color(0.3, .7, .7, 1)});
 
         
         this.flower_toggle++;

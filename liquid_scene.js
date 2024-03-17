@@ -91,6 +91,16 @@ export class Liquid_Scene extends Component{
         this.corgi.velocity = vec3(10, 0, -10);
 
         this.animt = 0
+
+        //corgo animation
+        this.thigh_angle = 0;
+        this.thigh_angle_change_rate = 0.1;
+        this.thigh_max_angle = Math.PI / 4;
+        this.thigh_forward = true;
+
+
+        this.tail_angle = 0;
+        this.tail_forward = true;
     }
     render_animation(caller) {
         if(!this.running) return;
@@ -136,5 +146,37 @@ export class Liquid_Scene extends Component{
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-10, 0.7, 5).times(Mat4.rotation(math.PI/2.4, 0    , 1, 0)).times(Mat4.scale(.8,.8,.8)), this.materials.mushroom)
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-11, 1, 6).times(Mat4.rotation(math.PI/1.2, 0    , 1, 0)).times(Mat4.scale(1,1,1)), this.materials.mushroom)
         this.shapes.mushroom.draw(caller, this.uniforms, Mat4.translation(-12, 1.3, 4).times(Mat4.scale(1.2,1.2,1.2)), this.materials.mushroom)
+
+        if (this.thigh_forward) {
+            this.thigh_angle += this.thigh_angle_change_rate;
+            this.corgi.model.thigh.rotation.z += this.thigh_angle_change_rate;
+            this.corgi.model.shoulder.rotation.z -= this.thigh_angle_change_rate;
+            if (this.thigh_angle >= this.thigh_max_angle) {
+                this.thigh_forward = false;
+            }
+        } else {
+            this.thigh_angle -= this.thigh_angle_change_rate;
+            this.corgi.model.thigh.rotation.z -= this.thigh_angle_change_rate;
+            this.corgi.model.shoulder.rotation.z += this.thigh_angle_change_rate;
+            if (this.thigh_angle <= -this.thigh_max_angle) {
+                this.thigh_forward = true;
+            }
+        }
+        //console.log(this.thigh_angle);
+
+        let wag_rate = 0.1
+        if (this.tail_forward) {
+            this.tail_angle += wag_rate;
+            this.corgi.model.tail_muscle.rotation.x += wag_rate;
+            if (this.tail_angle >= Math.PI / 6) {
+                this.tail_forward = false;
+            }
+        } else {
+            this.tail_angle -= wag_rate;
+            this.corgi.model.tail_muscle.rotation.x -= wag_rate;
+            if (this.tail_angle <= -Math.PI / 6) {
+                this.tail_forward = true;
+            }
+        }
     }
 }
